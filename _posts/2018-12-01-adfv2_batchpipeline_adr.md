@@ -29,7 +29,7 @@ In that scenario we are a service provider that aggregates, in a central big dat
 
 This pipeline will take encoded files published hourly on a centralized sFTP server (one top folder per customer) decode them, convert them (csv to parquet) and move them to the ingestion folder of our big data platform.
 
-![Schema illustrating the technical requirements](/_posts/201812_adfv2_batchpipeline/technicalRequirements.png?raw=true)
+![Schema illustrating the technical requirements]({{ site.url }}/_posts/201812_adfv2_batchpipeline/technicalRequirements.png?raw=true)
 
 ### Technical Requirements
 
@@ -40,7 +40,7 @@ This pipeline will take encoded files published hourly on a centralized sFTP ser
 
 Additionally, the files need to be re-organized from a folder hierarchy (`Company\Year\Month\Device ID\xyz.csv`) to a flat structure(`Staging\year_month_company_device_xyz.csv`), for an easier ingestion in the big data platform.
 
-![Schema illustrating the technical requirements](/_posts/201812_adfv2_batchpipeline/technicalRequirements2.png?raw=true)
+![Schema illustrating the technical requirements]({{ site.url }}/_posts/201812_adfv2_batchpipeline/technicalRequirements2.png?raw=true)
 
 ### General Approach
 
