@@ -29,7 +29,7 @@ In that scenario we are a service provider that aggregates, in a central big dat
 
 This pipeline will take encoded files published hourly on a centralized sFTP server (one top folder per customer) decode them, convert them (csv to parquet) and move them to the ingestion folder of our big data platform.
 
-![Schema illustrating the technical requirements](/201812_adfv2_batchpipeline/technicalRequirements.png?raw=true)
+![Schema illustrating the technical requirements](/_posts/201812_adfv2_batchpipeline/technicalRequirements.png?raw=true)
 
 ### Technical Requirements
 
@@ -40,7 +40,7 @@ This pipeline will take encoded files published hourly on a centralized sFTP ser
 
 Additionally, the files need to be re-organized from a folder hierarchy (`Company\Year\Month\Device ID\xyz.csv`) to a flat structure(`Staging\year_month_company_device_xyz.csv`), for an easier ingestion in the big data platform.
 
-![Schema illustrating the technical requirements](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/technicalRequirements2.png?raw=true)
+![Schema illustrating the technical requirements](/_posts/201812_adfv2_batchpipeline/technicalRequirements2.png?raw=true)
 
 ### General Approach
 
@@ -94,7 +94,7 @@ The final staging folder will be an Azure Blob store, which is much easier to ac
 
 ### Architecture
 
-![Schema illustrating the architecture](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/technicalArchitecture.png?raw=true)
+![Schema illustrating the architecture](/_posts/201812_adfv2_batchpipeline/technicalArchitecture.png?raw=true)
 
 Regarding scheduling, here are some considerations on how each activity will be triggered:
 
@@ -104,7 +104,7 @@ Regarding scheduling, here are some considerations on how each activity will be 
 
 Regarding storage:
 
-![Schema illustrating the architecture](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/technicalArchitecture2.png?raw=true)
+![Schema illustrating the architecture](/_posts/201812_adfv2_batchpipeline/technicalArchitecture2.png?raw=true)
 
 ### Costs
 
