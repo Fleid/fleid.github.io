@@ -29,7 +29,7 @@ In that scenario we are a service provider that aggregates, in a central big dat
 
 This pipeline will take encoded files published hourly on a centralized sFTP server (one top folder per customer) decode them, convert them (csv to parquet) and move them to the ingestion folder of our big data platform.
 
-![Schema illustrating the technical requirements](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/technicalRequirements.png?raw=true)
+![Schema illustrating the technical requirements](/201812_adfv2_batchpipeline/technicalRequirements.png?raw=true)
 
 ### Technical Requirements
 
