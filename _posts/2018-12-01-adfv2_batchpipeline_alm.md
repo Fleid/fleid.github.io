@@ -1,3 +1,10 @@
+---
+layout: post
+title:  "Batch Pipeline Project Review : Developer Experience and ALM"
+date:   2018-12-01 11:00:00 -0700
+categories: architecture ADFv2 Azure batch
+---
+
 # Azure Data Factory v2 - Batch Pipeline Project Review : Developer Experience and ALM
 
 This is article is part of a series:
