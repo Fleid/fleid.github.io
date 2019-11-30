@@ -9,15 +9,12 @@ categories: architecture ADFv2 Azure batch
 
 This is article is part of a series:
 
-1. **Architecture discussion** *<- you are here, comments / PR are [welcome](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline_adr.md)*
-2. [ALM and Infrastructure](https://fleid.github.io/adfv2_batchepipeline/201812_adfv2_batchpipeline_alm)
-3. [Notable implementation details](https://fleid.github.io/adfv2_batchepipeline/201812_adfv2_batchpipeline_implementation)
+1. **Architecture discussion** *<- you are here*
+2. [ALM and Infrastructure](https://florianeiden.ghost.io/hybrid-batch-alm/)
+3. [Notable implementation details](https://florianeiden.ghost.io/hybrid-batch-details/)
 
-- Author : Florian Eiden
-  - [blog](https://fleid.net/) / [twitter](https://twitter.com/fleid_bi?lang=en) / [linkedin](https://ca.linkedin.com/in/fleid) / [github](https://github.com/fleid)
-  - Disclaimer : I'm a Microsoft employee at the time of writing
-- Publication : 2018-12
-  - Last update : 2019-03-01
+Original publication date : [2018-12](https://github.com/Fleid/fleid.github.io/blob/master/_posts/2018-12-01-adfv2_batchpipeline_adr.md)
+
 
 ## Scenario
 
@@ -29,7 +26,7 @@ In that scenario we are a service provider that aggregates, in a central big dat
 
 This pipeline will take encoded files published hourly on a centralized sFTP server (one top folder per customer) decode them, convert them (csv to parquet) and move them to the ingestion folder of our big data platform.
 
-![Schema illustrating the technical requirements](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/technicalArchitecture.png?raw=true)
+![Schema illustrating the technical requirements](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/technicalRequirements.png?raw=true)
 
 ### Technical Requirements
 
@@ -40,7 +37,7 @@ This pipeline will take encoded files published hourly on a centralized sFTP ser
 
 Additionally, the files need to be re-organized from a folder hierarchy (`Company\Year\Month\Device ID\xyz.csv`) to a flat structure(`Staging\year_month_company_device_xyz.csv`), for an easier ingestion in the big data platform.
 
-![Schema illustrating the technical requirements]({{ site.url }}/_posts/201812_adfv2_batchpipeline/technicalRequirements2.png?raw=true)
+![Schema illustrating the technical requirements](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/technicalRequirements2.png?raw=true)
 
 ### General Approach
 
@@ -125,4 +122,4 @@ There are [tons of them](https://www.jamesserra.com/archive/2019/01/what-product
 
 ## Up next
 
-[ALM and Infrastructure](https://fleid.github.io/adfv2_batchepipeline/201812_adfv2_batchpipeline_alm)
+[ALM and Infrastructure](https://florianeiden.ghost.io/hybrid-batch-alm/)
