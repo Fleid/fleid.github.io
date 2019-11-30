@@ -6,24 +6,19 @@ categories: architecture ADFv2 Azure batch
 ---
 
 # Azure Data Factory v2 - Batch Pipeline Project Review : Notable Implementation Details
-
 This is article is part of a series:
 
-1. [Architecture discussion](https://fleid.github.io/adfv2_batchepipeline/201812_adfv2_batchpipeline_adr)
-2. [ALM and Infrastructure](https://fleid.github.io/adfv2_batchepipeline/201812_adfv2_batchpipeline_alm)
-3. **Notable implementation details** *<- you are here, comments / PR are [welcome](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline_implementation.md)*
+1. [Architecture discussion](https://florianeiden.ghost.io/hybrid-batch-adr/)
+2. [ALM and Infrastructure](https://florianeiden.ghost.io/hybrid-batch-alm/)
+3. **Notable implementation details** *<- you are here*
 
-- Author : Florian Eiden
-  - [blog](https://fleid.net/) / [twitter](https://twitter.com/fleid_bi?lang=en) / [linkedin](https://ca.linkedin.com/in/fleid) / [github](https://github.com/fleid)
-  - Disclaimer : I'm a Microsoft employee at the time of writing
-- Publication : 2018-12
-  - Last update : 2019-01-10
+Original publication date : [2018-12](https://github.com/Fleid/fleid.github.io/blob/master/_posts/2018-12-01-adfv2_batchpipeline_implementation.md)
 
 ## Architecture
 
-As a reminder, here is the solution architecture we established earlier ([see the first article of the series for more details](https://fleid.github.io/adfv2_batchepipeline/201812_adfv2_batchpipeline_adr)):
+As a reminder, here is the solution architecture we established earlier ([see the first article of the series for more details](https://florianeiden.ghost.io/hybrid-batch-adr/)):
 
-![Schema illustrating the architecture](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/technicalArchitecture.png?raw=true)
+![Schema illustrating the architecture](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/technicalArchitecture.png?raw=true)
 
 ## Implementation in ADFv2
 
@@ -36,7 +31,7 @@ We will focus on the implementation of **Step 3 and 4** in Azure Data Factory v2
 - **Step 4**
   - Delete files when processed
 
-![Schema illustrating the architecture](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/technicalArchitecture2.png?raw=true)
+![Schema illustrating the architecture](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/technicalArchitecture2.png?raw=true)
 
 ### Logical flow
 
@@ -54,11 +49,11 @@ At the time of writing it is not possible to nest a ForEach activity inside anot
 
 Here is an illustration of the expected logical flow:
 
-![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/pipeLogicalFlow.png?raw=true)
+![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/pipeLogicalFlow.png?raw=true)
 
 ### Data sets
 
-We will use parameters in our data sets following that [strategy](https://www.blue-granite.com/adfv2_batchepipeline/using-azure-data-factory-v2-activities-dynamic-content-to-direct-your-files).
+We will use parameters in our data sets following that [strategy](https://www.blue-granite.com/blog/using-azure-data-factory-v2-activities-dynamic-content-to-direct-your-files).
 
 To iterate over the file structure in the **File Store B**, we will need:
 
@@ -101,7 +96,7 @@ Parameter:
 
 This is the master pipeline for step 3/4. It will contain the main routine and eventually some additional administrative steps (audit, preparatory and clean-up tasks...).
 
-![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/pipe01.png?raw=true)
+![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/pipe01.png?raw=true)
 
 - Execute Pipeline Task : *02 - Get Companies and IDs*
   - Invoked Pipeline : "02 - Get Companies and IDs"
@@ -120,7 +115,7 @@ Variables:
 
 This pipeline will get the list of companies from the folder metadata, generate the current Year/Month, and from that get the list of available Device IDs from the subfolder metadata.
 
-![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/pipe02.png?raw=true)
+![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/pipe02.png?raw=true)
 
 - Get Metadata : *Get Companies*
   - Dataset : **FS_Companies**
@@ -162,7 +157,7 @@ Parameters:
 
 This pipeline will get the list of file names from the final subfolder metadata.
 
-![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/pipe03.png?raw=true)
+![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/pipe03.png?raw=true)
 
 - ForEach : *ForEach ID*
   - Items : **`@pipeline().parameters.PipeDeviceIDList`**
@@ -198,7 +193,7 @@ Parameters:
 
 This pipeline will copy and then delete the files.
 
-![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/pipe04.png?raw=true)
+![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/pipe04.png?raw=true)
 
 - ForEach : *ForEach FileName*
   - Items : **`@pipeline().parameters.PipeFileNames`**
@@ -229,7 +224,7 @@ This pipeline will copy and then delete the files.
 
 Here is an illustration of the complete flow as implemented in ADFv2 across 4 pipelines:
 
-![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/adfv2_batchepipeline/201812_adfv2_batchpipeline/pipeFlow.png?raw=true)
+![Screenshot of the pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/pipeFlow.png?raw=true)
 
 ## Conclusion
 
