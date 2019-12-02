@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "BCalculating Consumer Lag in Azure Event Hubs"
+title:  "Calculating Consumer Lag in Azure Event Hubs"
 date:   201-12-02 10:00:00 -0700
 categories: monitoring Azure eventhub kafka
 ---
@@ -19,7 +19,7 @@ Looking at a topic as it is [typically implemented](https://kafka.apache.org/doc
 
 On that schema, the last committed offset of the topic is 11. Consumer A is reading at offset 9 with a **lag of 2** (11-9). Consumer B is reading at 11 with a **lag of 0**. An added complexity is that topics are always [partitioned](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-features#partitions). For a given topic, the actual grain to calculate lag will effectively be **{ consumer x partition }**.
 
-![The impact of partitioning on consumer lag](\img\consumerlag_partitions.png)
+![The impact of partitioning on consumer lag](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/consumerlag_partitions.png?raw=true)
 
 ## No consumer lag metric in Azure Event Hubs
 
@@ -27,7 +27,7 @@ If Confluent offers [multiple options](https://docs.confluent.io/current/cloud/u
 
 It makes sense when you remember that **Azure Event Hubs** is basically a topic-as-a-service offering, while Kafka is a fully featured platform. We can think of it as comparing a single table vs a complete [RDBMS](https://en.wikipedia.org/wiki/Relational_database#RDBMS). Not the same effort to get started, but not the same value proposition either.
 
-![Value proposition of Event Hub vs Kafka](\img\eh_value_prop.png)
+![Value proposition of Event Hub vs Kafka](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/eh_value_prop.png?raw=true)
 
 So to get that consumer lag, we will need to calculate it ourselves: there is no central service that will do it for us.
 
@@ -43,7 +43,7 @@ To calculate consumer lag we "just" need to do a difference: ```consumerLag(cons
 
 Here the ```lastEnqueuedSequence``` is the sequence number of the last event that was ingested on a specific partition of the Event Hub (offset 11 on partition 0 of the schema below). If we compare that to the ```currentSequence``` number being read by a consumer (offset 9 for A on the same partition below), it will give us its lag - on that partition: 3.
 
-![Consumer Lag calculated at the partition level](\img\consumerlag_partitionCalculation.png)
+![Consumer Lag calculated at the partition level](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/consumerlag_partitionCalculation.png?raw=true)
 
 For ```lastEnqueuedSequence``` things are easy. It's a property of the Event Hub partitions that can be obtained from an [EventHubClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.eventhubs.eventhubclient?view=azure-dotnet) via [GetPartitionRuntimeInformationAsync](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.eventhubs.eventhubclient.getpartitionruntimeinformationasync?view=azure-dotnet#Microsoft_Azure_EventHubs_EventHubClient_GetPartitionRuntimeInformationAsync_System_String_).
 
@@ -113,7 +113,7 @@ public Task ProcessEventsAsync(PartitionContext context, IEnumerable<EventData> 
 
 At runtime, we will be able to see the consumer lag each time we receive a message:
 
-![Our updated app output the consumer lag for each message received](\img\consumerLag_console.png)
+![Our updated app output the consumer lag for each message received](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/consumerlag_console.png?raw=true)
 
 From there we can push that new metric to [our monitoring solution](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/metrics-custom-overview).
 
