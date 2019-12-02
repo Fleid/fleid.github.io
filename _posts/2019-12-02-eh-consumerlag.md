@@ -50,11 +50,11 @@ For ```lastEnqueuedSequence``` things are easy. It's a property of the Event Hub
 Now for ```currentSequence```, it is not that easy. By design, the Event Hubs service is never aware of the consumer offset. As [explained](https://stackoverflow.com/questions/35464192/understanding-check-pointing-in-eventhub) by a member of the product team responsible for Event Hubs:
 > In short - just to be clear, EventHubs Service - is completely unaware that you are checkpointing to Azure Storage. EventProcessor library - only helps the job of checkpointing the Offset (and managing lease across multiple instances) using the Azure Storage library
 
-If we are using the direct API to consume events from the Event Hub, we have to manage the offset - store its value - by ourselves. In that case, we will have to handle the consumer lag calculation also, since nobody else has a knowledge of the offset. This is not the recommended approach though. The Event Hubs team maintain a companion library to Event Hubs called the ```EventProcessorHost```. It's job is to maintain that state - the current customer offset - in its own storage service (most of the time a storage account that we need to provide for it to run).
+If we are using the direct API to consume events from the Event Hub, we have to manage the offset - store its value - by ourselves. In that case, we will have to handle the consumer lag calculation also, since nobody else has a knowledge of it. This is not the recommended approach though. The Event Hubs team maintain a companion library to Event Hubs called the ```EventProcessorHost```. Its job is to manage the current customer offset - storing in its own storage service - Most of the time this will be a storage account that we need to provide for it to run.
 
 ![Simplified view of the event hub processor topology](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/eh_simplifiedView.png?raw=true)
 
-If we follow that approach (again, it's the recommended one), then the only place where we can get the ```currentSequence``` will be at the Event Processor level. From there we could then get ```lastEnqueuedSequence```  from an ```EventHubClient```, but the Event Hubs team has actually made that available directly from the ```EventProcessorHost```. It's not turned on by default, for slight performance reasons, but it can be enabled via the [EventProcessorOptions](https://docs.microsoft.com/en-us/dotnet/api/microsoft.servicebus.messaging.eventprocessoroptions?view=azure-dotnet) and its ```EnableReceiverRuntimeMetric``` property, passed when registering the processor to the host.
+If we follow that approach (again, it's the recommended one), then the only place where we can get the ```currentSequence``` will be at the Event Processor level (```SimpleEventProcessor``` above). There we could get ```lastEnqueuedSequence```  from an ```EventHubClient```, but the Event Hubs team has actually made it available directly from the ```EventProcessorHost```. It's not turned on by default, for slight performance reasons, but it can be enabled via the [EventProcessorOptions](https://docs.microsoft.com/en-us/dotnet/api/microsoft.servicebus.messaging.eventprocessoroptions?view=azure-dotnet) and its ```EnableReceiverRuntimeMetric``` property, passed when registering the processor to the host (see above).
 
 Using [this sample solution](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-dotnet-standard-getstarted-send#receive-events) we can do just that with the following changes.
 
@@ -121,7 +121,7 @@ From there we can push that new metric to [our monitoring solution](https://docs
 
 If we leverage the ```EventProcessorHost``` library, we could actually gather checkpoints / current offsets directly from the storage service it requires. Looking at what's generated there, it's a pretty straightforward file to process:
 
->> SCREENSHOT BLOB STORE FILE
+![Inside the file the Event Processor Host use to keep the offset](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/eh_eventProcessorInternal?raw=true)
 
 On the plus side, it means no code change in the processor, and with the [new change feed](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-change-feed?tabs=azure-portal) capability of blob storage we should be able to build a live monitoring solution across all consumers fairly easily.
 
