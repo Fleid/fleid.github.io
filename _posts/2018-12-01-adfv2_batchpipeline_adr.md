@@ -15,7 +15,6 @@ This is article is part of a series:
 
 Original publication date : [2018-12](https://github.com/Fleid/fleid.github.io/blob/master/_posts/2018-12-01-adfv2_batchpipeline_adr.md)
 
-
 ## Scenario
 
 ### Scope
