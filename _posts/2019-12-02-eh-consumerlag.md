@@ -52,7 +52,7 @@ Now for ```currentSequence```, it is not that easy. By design, the Event Hubs se
 
 If we are using the direct API to consume events from the Event Hub, we have to manage the offset - store its value - by ourselves. In that case, we will have to handle the consumer lag calculation also, since nobody else has a knowledge of the offset. This is not the recommended approach though. The Event Hubs team maintain a companion library to Event Hubs called the ```EventProcessorHost```. It's job is to maintain that state - the current customer offset - in its own storage service (most of the time a storage account that we need to provide for it to run).
 
->> SCHEMA OF EVENT HUB, PROCESSOR, STORAGE ACCOUNT, ORU APP
+![Simplified view of the event hub processor topology](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/eh_simplifiedView.png?raw=true)
 
 If we follow that approach (again, it's the recommended one), then the only place where we can get the ```currentSequence``` will be at the Event Processor level. From there we could then get ```lastEnqueuedSequence```  from an ```EventHubClient```, but the Event Hubs team has actually made that available directly from the ```EventProcessorHost```. It's not turned on by default, for slight performance reasons, but it can be enabled via the [EventProcessorOptions](https://docs.microsoft.com/en-us/dotnet/api/microsoft.servicebus.messaging.eventprocessoroptions?view=azure-dotnet) and its ```EnableReceiverRuntimeMetric``` property, passed when registering the processor to the host.
 
