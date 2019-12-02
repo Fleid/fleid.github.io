@@ -121,7 +121,7 @@ From there we can push that new metric to [our monitoring solution](https://docs
 
 If we leverage the ```EventProcessorHost``` library, we could actually gather checkpoints / current offsets directly from the storage service it requires. Looking at what's generated there, it's a pretty straightforward file to process:
 
-![Inside the file the Event Processor Host use to keep the offset](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/eh_eventProcessorInternal?raw=true)
+![Inside the file the Event Processor Host use to keep the offset](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_eh_consumerlag/eh_eventProcessorInternal.png?raw=true)
 
 On the plus side, it means no code change in the processor, and with the [new change feed](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-change-feed?tabs=azure-portal) capability of blob storage we should be able to build a live monitoring solution across all consumers fairly easily.
 
