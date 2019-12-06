@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Calculating Consumer Lag in Azure Event Hubs"
-date:   201-12-02 10:00:00 -0700
+date:   2019-12-02 10:00:00 -0700
 categories: monitoring Azure eventhub kafka
 ---
 
