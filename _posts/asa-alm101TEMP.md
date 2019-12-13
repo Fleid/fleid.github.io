@@ -1,4 +1,9 @@
 
+> Let's re-organize that schema and go a bit deeper in each areas - and yes, I'm spoiling everything. **Please note that this is not the end state**, quite the opposite it's the first most basic step towards a solid delivery pipeline of an ASA project.
+
+![Schema](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm100_local.png?raw=true)
+
+
 ## 1. Developer Experience
 
 ### Status of a job
