@@ -3,6 +3,23 @@
 
 ![Schema](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm100_local.png?raw=true)
 
+### Input
+
+To have fun in a streaming scenario, we need a streaming data source. It used to be painful to get that part set up, now it's trivial.
+
+One of the easiest one is to leverage the [Raspberry Pi Azure IoT Online Simulator](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-quick-create-portal#run-the-iot-simulator) via an [IoT Hub](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-quick-create-portal#prepare-the-input-data). To my knowledge it needs to sit in an open browser tab, so another option is to build a quick Azure Function [triggered by a timer](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-scheduled-function), bound to an [Event Hub in output](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-hubs#output). I should cover that in another article later, but the coding is [straightforward](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-hubs#output---c-example).
+
+That IoT Hub (or Event Hub) will **not** be part of our project. In a real life scenario, it's either provided by another service, or needs to be put in a separate project since its dependencies and its life cycle rhythm are both different than our main job.
+
+### Output
+
+This basic pipeline will get a basic primary output: a blob store. It's fitting since it doesn't care about schema drift (crafting a job against SQL is always a pain since it requires a table update every time the schema is updated. We can push data in any format, and we don't really care about reading it since we won't really do that anyway.
+
+I'm currently experimenting with using Cosmos DB with container set up with a short TTL (time-to-live) to observe what's flying in the pipeline. It's also schema-on-read, it can scale with ASA, allows exactly-once delivery (more on that later), and provide a Data Explorer experience form the portal. It's not free, but it's cheap for the value it brings.
+
+### Query
+
+Here is the query I'm currently using, notice 2 patterns: audit / prod-flag to debug output.
 
 ## 1. Developer Experience
 
@@ -26,26 +43,8 @@ For the [delivery guarantee](https://docs.microsoft.com/en-us/stream-analytics-q
 
 This explains that.
 
-### VSCode setup
 
 
-https://docs.microsoft.com/en-us/azure/stream-analytics/vscode-local-run
-
-So the doc is not updated, but I should be able to test locally, in VS Code, both for local sample data and live stream input.
-
-The tutorial is summary, it just tells you to create a local input, and run the query on it. Let's generate a test file from scratch then. Or I could download what was put on blob the last time the job ran. I need to install [Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
-
-
-
-
-
-### Azure Devops Setup + Repos
-
-I created new Azure Devops project (I already had an account there, but it's free anyway).
-
-There I created 3 new repos: Ticker (consoleapp), Function01 and ASAtopologu01 and initialized them. I'm making assumptions here in terms of repo strategy. I want to isolate per technology by habit, we'll see how it goes. Still I'm not sure how to handle infra as code artifacts, At the moment I want each component to be self contained (Ticker repo will host deployment code for ticker resources), but then where to put shared assets? I'll surely need a shared infra repo but let's feel the pain before I fix that.
-
-Then I cloned these repos locally, in VSCode, opening a terminal in the repo root folder, and doing a ```git clone https...```. That adresse comes form DevOps, that will also generate for you. Which now means I need a KeyVault to store those credentials, which means I need an Azure subscription. Why not 1Password? I expect to need them accessible from code.
 
 ### Local execution and testing
 
@@ -64,7 +63,7 @@ In passing, there is an extremly strong case to use an idempotent destination wi
 
 - Gotcha local output
 
-**NB**: [Info] 11/11/2019 10:14:46 PM : Warning : Time policy for stream analytics job is not supported for local static input file.
+
 
 I installed Storage Explorer, but in the meantime just downloaded the file from the Azure portal. Apparently it's badly formatted though (each record is appended, without being in ```[]``` or separated by ,). 
 >> I should look into why the output JSON file on blob was weird on how to prevent that. Or is IoTHub the culprit?
@@ -73,16 +72,7 @@ I corrected it manually, now I have a test file. Well, a random test file, I wou
 
 I created a new ASA local input getting data from that file.
 
-After playing a bit with the setup, I settled on the following: 
 
-- a ```Local_myInputfile.json``` definition file
-- a ```Data_myInputfile.xxx``` for the test data,
-  - In this file I add a ```_testId``` column for the test case number
-- in the query that needs to be tested I add ```COALESCE(_testID,0) AS Audit``` as an output column
-
-Now I need the following:
-
-- [x] to add the LocalRunOutputs folder to the gitignore
 - [ ] to understand why the output didn't change to CSV when I updated the output definition file
   - New output, same result. Not sure the local job runner can output CSV?
 - [ ] to find a way to compare the output to my Eval conditions
@@ -97,7 +87,6 @@ LOL @ scripting the ASA project, there's no support in the CLI. The options are 
 
 I wanted to try testing here and there, but they don't provide a test file at the right format and I don't even have the schema yet.
 
-### CLI
 
 ### PS
 
