@@ -1,9 +1,13 @@
 {
     "cSpell.words": [
         "ARTIFACTSTAGINGDIRECTORY",
+        "Lifecycle",
         "SOURCESDIRECTORY",
+        "asaproj",
         "asaql",
         "cicd",
+        "gitignore",
+        "localdata",
         "msbuild",
         "streamanalytics"
     ]
