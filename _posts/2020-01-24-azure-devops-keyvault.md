@@ -46,12 +46,11 @@ Here are the wirings that work, see below for details on each syntax:
 
 ## Options
 
-Before trying anything else, it's required to create a variable group linked to the Key Vault (see [middle section](https://www.eiden.ca/asa-alm-104/) if necessary).
+**Before trying anything else**, it's required to create a variable group linked to the Key Vault (see [middle section](https://www.eiden.ca/asa-alm-104/) if necessary).
 
 To be noted:
 
 > When trying to link the KeyVault in the Variable Group, the **authentication** process can hang indefinitely. It can be solved in KeyVault, by manually creating an **access policy** for the Azure DevOps project application principal (service account) with List/Get permissions on Secrets. The application principal id can be found in the Azure DevOps project **settings** (bottom left), **Service Connections** tab, editing the right subscription and going `use the full version of the service connection dialog`. It should be under `Service principal client ID`.
-
 
 ### Input Macro syntax
 
@@ -86,13 +85,60 @@ steps:
 
 #### Classic experience
 
-The inline script can reference the secret directly via : `$(kvTestSecret)`.
+In the classic experience, the variable group must be declared in the `Variables` tab beforehand.
+Then the inline script can reference the secret directly via : `$(kvTestSecret)`.
 
-![Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm104_goal.png?raw=true)
+![Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)
 
-*[figure 2 - Screenshot of Azure DevOps : Input macro syntax for inline script in classic experienc](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)*
+*[figure 2 - Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)*
 
 ### Inherited environment variable
+
+This syntax is the default for variables **not** coming from Key Vault (local variable and default variable groups). It will **not** return Key Vault secrets in any configuration.
+
+With the variable group `myDefaultVariableGroup` **not** linked to KeyVault, holding the variable `normalVariable`. Also with the variable `localVariable`.
+
+#### YAML
+
+```YAML
+
+trigger:
+  - master
+  
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+- group: myDefaultVariableGroup
+- name: localVariable
+  value: myvalue
+  
+steps:
+
+- task: AzurePowerShell@4
+  displayName: 'Azure PowerShell script - inline'
+  inputs:
+    azureSubscription: '...'
+    ScriptType: 'InlineScript'
+    Inline: |
+      # Using the env var:
+      Write-Host "Inherited ENV from normal VG: $env:normalVariable"
+      Write-Host "Inherited ENV from local variable: $env:localVariable"
+    azurePowerShellVersion: 'LatestVersion'
+```
+
+#### Classic experience
+
+In the classic experience, both the local variable and the variable group must be declared in the `Variables` tab beforehand.
+Then the inline script can reference the variables directly via : `$env:normalVariable`.
+
+NB : The variable name will be altered as follow [ref](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#understand-variable-syntax):
+
+> Name is upper-cased, . replaced with _, and automatically
+
+![Screenshot of Azure DevOps : Inherited environment variable for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/inherited_inline_classic.png?raw=true)
+
+*[figure 2 - Screenshot of Azure DevOps : Inherited environment variable for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/inherited_inline_classic.png?raw=true)*
 
 ### Mapped environment variable
 
