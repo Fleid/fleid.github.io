@@ -17,7 +17,7 @@ At the time I was [building a CI/CD pipeline](https://www.eiden.ca/asa-alm-100/)
 
 *[figure 1 - Schema of the release pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm104_goal.png?raw=true)*
 
-What should be a straightforward scenario takes a bit of planning. The main issue being that Azure Pipelines offers different capabilities depending on 2 factors:
+What should be a straightforward scenario takes a bit of planning. The main issue being that Azure Pipelines offers different capabilities, which come with different syntaxes, depending on 2 factors:
 
 - [the experience](https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/pipelines-get-started?view=azure-devops&tabs=yaml) of the pipeline:  YAML vs Classic
 - the script type of the [Azure PowerShell](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=azure-devops) task: inline vs file script
@@ -25,6 +25,10 @@ What should be a straightforward scenario takes a bit of planning. The main issu
 ## TL/DR
 
 Here are the wirings that work, see below for details on each syntax:
+
+![Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)
+
+*[figure 2 - Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)*
 
 - **YAML** experience / **Inline** script
   - Input macro
@@ -44,24 +48,21 @@ Here are the wirings that work, see below for details on each syntax:
   - Argument / Parameter mapping
   - PowerShell Get-AzKeyVaultSecret
 
-![Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)
-
-*[figure 2 - Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)*
-
 ## Options
 
-**Before trying anything else**, it's required to create a variable group linked to the Key Vault (see [middle section](https://www.eiden.ca/asa-alm-104/) if necessary).
+**Before trying anything else**, it's required to create a variable group linked to the Key Vault (see [middle section of that article](https://www.eiden.ca/asa-alm-104/) if necessary).
 
 To be noted:
 
 > When trying to link the KeyVault in the Variable Group, the **authentication** process can hang indefinitely. It can be solved in KeyVault, by manually creating an **access policy** for the Azure DevOps project application principal (service account) with List/Get permissions on Secrets. The application principal id can be found in the Azure DevOps project **settings** (bottom left), **Service Connections** tab, editing the right subscription and going `use the full version of the service connection dialog`. It should be under `Service principal client ID`.
 
-### Input Macro syntax
+### Input macro
 
-Only available inline. With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
-[More info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline)
+Only available inline, [more info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline).
 
-#### YAML experience
+With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
+
+#### Input macro : YAML experience
 
 The inline script can reference the secret directly via : `$(kvTestSecret)`.
 
@@ -87,7 +88,7 @@ steps:
       Write-Host "Input-macro from KeyVault VG: $(kvTestSecret)"
 ```
 
-#### Classic experience
+#### Input macro : Classic experience
 
 In the classic experience, the variable group must be declared in the `Variables` tab beforehand.
 Then the inline script can reference the secret directly via : `$(kvTestSecret)`.
@@ -102,7 +103,7 @@ This syntax is the default for variables **not** coming from Key Vault (local va
 
 With the variable group `myDefaultVariableGroup` **not** linked to KeyVault, holding the variable `normalVariable`. Also with the variable `localVariable`.
 
-#### YAML
+#### Inherited Env : YAML experience
 
 ```YAML
 
@@ -131,14 +132,14 @@ steps:
     azurePowerShellVersion: 'LatestVersion'
 ```
 
-#### Classic experience
+#### Inherited Env : Classic experience
 
 In the classic experience, both the local variable and the variable group must be declared in the `Variables` tab beforehand.
-Then the inline script can reference the variables directly via : `$env:normalVariable`.
+Then the inline script can reference the variables directly via : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`)
 
-NB : The variable name will be altered as follow [ref](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#understand-variable-syntax):
+NB : The variable name will be altered as follow ([ref](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#understand-variable-syntax)):
 
-> Name is upper-cased, . replaced with _, and automatically
+> Name is upper-cased, . replaced with _
 
 ![Screenshot of Azure DevOps : Inherited environment variable for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/inherited_inline_classic.png?raw=true)
 
