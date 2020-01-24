@@ -9,18 +9,18 @@ categories: ALM Azure ASA DevOps
 
 ## Context
 
-I [recently stumbled](https://www.eiden.ca/asa-alm-104/) on some issues while trying to retrieve secrets stored in [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) from a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/).
+I was [recently challenged](https://www.eiden.ca/asa-alm-104/) while trying to retrieve secrets stored in [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) from a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/).
 
-I was [building a CI/CD pipeline](https://www.eiden.ca/asa-alm-100/) for an [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction) job in Azure DevOps. For that I needed to perform **ARM Template deployments** via PowerShell in the release phase. With my secrets stored in Key Vault, I needed to get access to their values in PowerShell to update those ARM template files. Figuring out the syntax was not as easy as I expected.
+At the time I was [building a CI/CD pipeline](https://www.eiden.ca/asa-alm-100/) for an [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction) job in Azure DevOps. For that I needed to perform some **ARM Template deployments** via a PowerShell task. Figuring out the syntax to get access to my secrets in the script was not as easy as I expected.
 
 ![Schema focusing on the release pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm104_goal.png?raw=true)
 
 *[figure 1 - Schema of the release pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm104_goal.png?raw=true)*
 
-What should be a straightforward scenario takes a bit of planning. The main point of contention being that Azure Pipelines offer different capabilities depending on 2 factors:
+What should be a straightforward scenario takes a bit of planning. The main issue being that Azure Pipelines offers different capabilities depending on 2 factors:
 
-- [the pipeline experience](https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/pipelines-get-started?view=azure-devops&tabs=yaml):  YAML vs Classic
-- the script execution type for its [Azure PowerShell](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=azure-devops) task: inline vs file script
+- [the experience](https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/pipelines-get-started?view=azure-devops&tabs=yaml) of the pipeline:  YAML vs Classic
+- the script type of the [Azure PowerShell](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=azure-devops) task: inline vs file script
 
 ## TL/DR
 
@@ -43,6 +43,10 @@ Here are the wirings that work, see below for details on each syntax:
 - **Classic** experience / **File Path** script
   - Argument / Parameter mapping
   - PowerShell Get-AzKeyVaultSecret
+
+![Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)
+
+*[figure 2 - Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)*
 
 ## Options
 
@@ -90,7 +94,7 @@ Then the inline script can reference the secret directly via : `$(kvTestSecret)`
 
 ![Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)
 
-*[figure 2 - Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)*
+*[figure 3 - Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)*
 
 ### Inherited environment variable
 
