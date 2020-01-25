@@ -9,9 +9,9 @@ categories: ALM Azure ASA DevOps
 
 ## Context
 
-I got [recently](https://www.eiden.ca/asa-alm-104/) confused while trying to retrieve secrets stored in [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) from a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). I could not figure out the proper syntax to do so (and I was [not alone](https://stackoverflow.com/questions/58607998/dynamicallly-get-keyvault-secret-in-azure-devops-powershell-script)).
+I [recently](https://www.eiden.ca/asa-alm-104/) got confused while trying to retrieve secrets stored in [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) from a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). I could not figure out the proper syntax to do so (and I was [not alone](https://stackoverflow.com/questions/58607998/dynamicallly-get-keyvault-secret-in-azure-devops-powershell-script)).
 
-This was for my [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction) project [CI/CD pipeline](https://www.eiden.ca/asa-alm-100/) in Azure DevOps. At some point I need to perform some **ARM Template deployments** via a PowerShell task, and figuring out the syntax to get access to my secrets in the script was not as easy as I expected.
+This was for the [CI/CD pipeline](https://www.eiden.ca/asa-alm-100/) of my [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction) project hosted in Azure DevOps. At some point it needed to perform some **ARM Template deployments** via a PowerShell task, and figuring out the syntax to get access to the secrets in the script was not as easy as I expected.
 
 ![Schema focusing on the release pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm104_goal.png?raw=true)
 
