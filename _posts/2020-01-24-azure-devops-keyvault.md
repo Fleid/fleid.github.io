@@ -61,6 +61,14 @@ To be noted:
 
 > When trying to link the KeyVault in the Variable Group, the **authentication** process can hang indefinitely. It can be solved in KeyVault, by manually creating an **access policy** for the Azure DevOps project application principal (service account) with List/Get permissions on Secrets. The application principal id can be found in the Azure DevOps project **settings** (bottom left), **Service Connections** tab, editing the right subscription and going `use the full version of the service connection dialog`. It should be under `Service principal client ID`.
 
+From there we can look at each syntax:
+
+- Input macro : only available for inline scripts
+- Inherited environment variable : most natural for normal variables but never works with secrets
+- Mapped environment variable : only available in the YAML experience
+- Arguments / parameter mapping : only available for file scripts
+- PowerShell `Get-AzKeyVaultSecret` : when it just needs to work
+
 ### 3.1 Input macro
 
 **Only available inline**, [more info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline).
