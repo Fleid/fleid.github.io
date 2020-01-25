@@ -24,7 +24,7 @@ What should have been a straightforward scenario took a bit of planning. Now I k
 
 ## TL/DR
 
-Here are the wirings that work, see below for details on each syntax:
+Here are the syntaxes that work, see below for details on each syntax:
 
 ![Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)
 
