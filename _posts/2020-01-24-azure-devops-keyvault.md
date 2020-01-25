@@ -22,6 +22,8 @@ What should have been a straightforward scenario took a bit of planning. Now I k
 - the Azure Pipelines [experience](https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/pipelines-get-started?view=azure-devops&tabs=yaml) in Build and Release:  YAML vs Classic
 - the script type of the [Azure PowerShell](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=azure-devops) task: inline vs file script
 
+***
+
 ## 2. TL/DR
 
 Here are the wirings that work, see below for details on each syntax:
@@ -47,6 +49,9 @@ Here are the wirings that work, see below for details on each syntax:
 - **Classic** experience / **File Path** script
   - Argument / Parameter mapping
   - PowerShell Get-AzKeyVaultSecret
+
+
+***
 
 ## 3. Options
 
@@ -208,6 +213,8 @@ steps:
 #### 3.4.2 Argument : Classic experience
 
 ### 3.5 PowerShell Get-AzKeyVaultSecret
+
+***
 
 ## 4 Resources
 
