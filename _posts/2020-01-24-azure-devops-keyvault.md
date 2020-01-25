@@ -222,6 +222,8 @@ With the variable group `myVariableGroup` linked to KeyVault, giving access to t
 
 Independently of the experiences, the PowerShell script will require a [binding statement](https://www.red-gate.com/simple-talk/sysadmin/powershell/how-to-use-parameters-in-powershell/) at the top:
 
+Content of **testArg.ps1**:
+
 ```PowerShell
 [CmdletBinding()]
 param ([string] $Arg1)
@@ -257,13 +259,72 @@ steps:
 
 #### 3.4.2 Argument : Classic experience
 
-The same syntax will be used to pass arguments in the Classic experience: `-Arg1 "$(kvTestSecret)" -Arg2 "$(myOtherSecret)"`.
+The same syntax will be used to pass arguments in the Classic experience: `-Arg1 "$(kvTestSecret)"`.
 
 ![Screenshot of Azure DevOps : Argument mapping for file script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/argument_file_classic.png?raw=true)
 
 *[figure 5 - Screenshot of Azure DevOps : Argument mapping for file script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/argument_file_classic.png?raw=true)*
 
-### 3.5 PowerShell Get-AzKeyVaultSecret
+### 3.5 PowerShell `Get-AzKeyVaultSecret`
+
+Finally, in every experience the [PowerShell cmdlet](https://docs.microsoft.com/en-us/powershell/module/az.keyvault/get-azkeyvaultsecret?view=azps-3.3.0) `Get-AzKeyVaultSecret` can leverage the existing wiring to retrieve the secret from the script. This approach will require an **access policy** in Azure Key Vault for the Azure DevOps project application principal (service account) with List/Get permissions on Secrets (see above).
+
+The PowerShell syntax is similar in every configuration:
+
+```PowerShell
+# Using PowerShell directly:
+$Secret = (Get-AzKeyVaultSecret -VaultName "myKeyVaultName" -Name "kvTestSecret").SecretValueText
+Write-Host  "PowerShell Get-AzKeyVaultSecret: $Secret"
+```
+
+The Key Vault name and Secret name should be retrieved as normal variables using inherited environment variable for example.
+
+#### 3.5.1 `Get-AzKeyVaultSecret` : YAML experience
+
+There is no need to declare a variable group here.
+
+```YAML
+trigger:
+  - master
+  
+pool:
+  vmImage: 'windows-latest'
+  
+steps:
+
+- task: AzurePowerShell@4
+  env: 
+  displayName: 'Azure PowerShell script - inline'
+  inputs:
+    azureSubscription: '...'
+    ScriptType: 'InlineScript'
+    Inline: |
+      # Using PowerShell directly:
+      $Secret = (Get-AzKeyVaultSecret -VaultName "myKeyVaultName" -Name "kvTestSecret").SecretValueText
+      Write-Host  "PowerShell Get-AzKeyVaultSecret: $Secret"
+    azurePowerShellVersion: 'LatestVersion'
+
+- task: AzurePowerShell@4
+  env: 
+  displayName: 'Azure PowerShell script - file path'
+  inputs:
+    azureSubscription: '...'
+    ScriptType: 'FilePath'
+    ScriptPath: '$(Build.Repository.LocalPath)/testArg.ps1'
+    azurePowerShellVersion: 'LatestVersion'
+```
+
+#### 3.5.1 `Get-AzKeyVaultSecret` : Classic experience
+
+There is no need to declare a variable group here.
+
+![Screenshot of Azure DevOps : PowerShell cmdlet for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/ps_inline_classic.png?raw=true)
+
+*[figure 6 - Screenshot of Azure DevOps : PowerShell cmdlet for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/ps_inline_classic.png?raw=true)*
+
+![Screenshot of Azure DevOps : PowerShell cmdlet for file script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/ps_file_classic.png?raw=true)
+
+*[figure 7 - Screenshot of Azure DevOps : PowerShell cmdlet for file script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/ps_file_classic.png?raw=true)*
 
 ***
 
