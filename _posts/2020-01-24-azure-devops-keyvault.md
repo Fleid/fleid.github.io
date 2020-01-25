@@ -17,9 +17,9 @@ This was for the [CI/CD pipeline](https://www.eiden.ca/asa-alm-100/) of my [Azur
 
 *[figure 1 - Schema of the release pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm104_goal.png?raw=true)*
 
-What should be a straightforward scenario takes a bit of planning. The main issue being that Azure Pipelines offers different capabilities, which come with different syntaxes, depending on 2 factors:
+What should have been a straightforward scenario took a bit of planning. Now I know that depending on 2 factors you can leverage different capabilities which come with different syntaxes. Those 2 factors being:
 
-- [the experience](https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/pipelines-get-started?view=azure-devops&tabs=yaml) of the pipeline:  YAML vs Classic
+- the Azure Pipelines [experience](https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/pipelines-get-started?view=azure-devops&tabs=yaml) in Build and Release:  YAML vs Classic
 - the script type of the [Azure PowerShell](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=azure-devops) task: inline vs file script
 
 ## TL/DR
