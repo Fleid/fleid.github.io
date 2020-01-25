@@ -259,7 +259,8 @@ steps:
 
 #### 3.4.2 Argument : Classic experience
 
-The same syntax will be used to pass arguments in the Classic experience: `-Arg1 "$(kvTestSecret)"`.
+In the classic experience, the variable group must be declared in the `Variables` tab beforehand.
+Then the same syntax will be used to map the argument: `-Arg1 "$(kvTestSecret)"`.
 
 ![Screenshot of Azure DevOps : Argument mapping for file script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/argument_file_classic.png?raw=true)
 
@@ -277,11 +278,11 @@ $Secret = (Get-AzKeyVaultSecret -VaultName "myKeyVaultName" -Name "kvTestSecret"
 Write-Host  "PowerShell Get-AzKeyVaultSecret: $Secret"
 ```
 
-The Key Vault name and Secret name should be retrieved as normal variables using inherited environment variable for example.
+While not illustrated here, the Key Vault name and Secret name should be retrieved via "normal" variables using inherited environment variable for example.
 
 #### 3.5.1 `Get-AzKeyVaultSecret` : YAML experience
 
-There is no need to declare a variable group here.
+There is no need to declare a variable group:
 
 ```YAML
 trigger:
@@ -316,7 +317,7 @@ steps:
 
 #### 3.5.1 `Get-AzKeyVaultSecret` : Classic experience
 
-There is no need to declare a variable group here.
+There is no need to declare a variable group:
 
 ![Screenshot of Azure DevOps : PowerShell cmdlet for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/ps_inline_classic.png?raw=true)
 
