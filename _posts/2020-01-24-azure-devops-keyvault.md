@@ -62,7 +62,7 @@ To be noted:
 
 With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
 
-#### Input macro : YAML experience
+#### 3.1.1 Input macro : YAML experience
 
 The inline script can reference the secret directly via : `$(kvTestSecret)`.
 
@@ -88,7 +88,7 @@ steps:
       Write-Host "Input-macro from KeyVault VG: $(kvTestSecret)"
 ```
 
-#### Input macro : Classic experience
+#### 3.1.2 Input macro : Classic experience
 
 In the classic experience, the variable group must be declared in the `Variables` tab beforehand.
 Then the inline script can reference the secret directly via : `$(kvTestSecret)` (as in `Write-Host "Input-macro from KeyVault VG: $(kvTestSecret)"`).
@@ -103,7 +103,7 @@ This syntax is the default for variables **not** coming from Key Vault (local va
 
 With the variable group `myDefaultVariableGroup` **not** linked to KeyVault, holding the variable `normalVariable`. Also with the variable `localVariable`.
 
-#### Inherited Env : YAML experience
+#### 3.2.1 Inherited Env : YAML experience
 
 For Inline and File script the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`)
 
@@ -142,7 +142,7 @@ steps:
     azurePowerShellVersion: 'LatestVersion'
 ```
 
-#### Inherited Env : Classic experience
+#### 3.2.2 Inherited Env : Classic experience
 
 In the classic experience, both the local variable and the variable group must be declared in the `Variables` tab beforehand.
 Then for Inline and File script the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`).
@@ -203,9 +203,9 @@ steps:
 
 **Only available in File Path experience**.
 
-#### Argument : YAML experience
+#### 3.4.1 Argument : YAML experience
 
-#### Argument : Classic experience
+#### 3.4.2 Argument : Classic experience
 
 ### 3.5 PowerShell Get-AzKeyVaultSecret
 
