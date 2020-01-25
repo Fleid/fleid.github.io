@@ -58,7 +58,7 @@ To be noted:
 
 ### Input macro
 
-Only available inline, [more info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline).
+**Only available inline**, [more info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline).
 
 With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
 
@@ -91,7 +91,7 @@ steps:
 #### Input macro : Classic experience
 
 In the classic experience, the variable group must be declared in the `Variables` tab beforehand.
-Then the inline script can reference the secret directly via : `$(kvTestSecret)`.
+Then the inline script can reference the secret directly via : `$(kvTestSecret)` (as in `Write-Host "Input-macro from KeyVault VG: $(kvTestSecret)"`).
 
 ![Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)
 
@@ -104,6 +104,8 @@ This syntax is the default for variables **not** coming from Key Vault (local va
 With the variable group `myDefaultVariableGroup` **not** linked to KeyVault, holding the variable `normalVariable`. Also with the variable `localVariable`.
 
 #### Inherited Env : YAML experience
+
+For Inline and File script the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`)
 
 ```YAML
 
@@ -130,12 +132,20 @@ steps:
       Write-Host "Inherited ENV from normal VG: $env:normalVariable"
       Write-Host "Inherited ENV from local variable: $env:localVariable"
     azurePowerShellVersion: 'LatestVersion'
+
+- task: AzurePowerShell@4
+  displayName: 'Azure PowerShell script - file path'
+  inputs:
+    azureSubscription: '...'
+    ScriptType: 'FilePath'
+    ScriptPath: '$(Build.Repository.LocalPath)/myScript.ps1'
+    azurePowerShellVersion: 'LatestVersion'
 ```
 
 #### Inherited Env : Classic experience
 
 In the classic experience, both the local variable and the variable group must be declared in the `Variables` tab beforehand.
-Then the inline script can reference the variables directly via : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`)
+Then for Inline and File script the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`).
 
 NB : The variable name will be altered as follow ([ref](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#understand-variable-syntax)):
 
@@ -147,7 +157,55 @@ NB : The variable name will be altered as follow ([ref](https://docs.microsoft.c
 
 ### Mapped environment variable
 
+**Only available via the YAML experience.** This is the [recommended solution](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#secret-variables) in YAML.
+
+With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
+The inline script can reference the secret directly via : `$env:MY_MAPPED_ENV_VAR_KV` (as in `Write-Host "Mapped ENV from KeyVault VG: $env:MY_MAPPED_ENV_VAR_KV"`).
+
+The key statement here being the `env:` [parameter](https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#task) required at each task.
+
+```YAML
+trigger:
+  - master
+  
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+- group: myVariableGroup
+  
+steps:
+
+- task: AzurePowerShell@4
+  env: 
+    MY_MAPPED_ENV_VAR_KV: $(kvTestSecret)
+  displayName: 'Azure PowerShell script - inline'
+  inputs:
+    azureSubscription: '...'
+    ScriptType: 'InlineScript'
+    Inline: |
+      # Using the env var:
+      Write-Host "Mapped ENV from KeyVault VG: $env:MY_MAPPED_ENV_VAR_KV"
+    azurePowerShellVersion: 'LatestVersion'
+
+- task: AzurePowerShell@4
+  env: 
+    MY_MAPPED_ENV_VAR_KV: $(kvTestSecret)
+  displayName: 'Azure PowerShell script - file path'
+  inputs:
+    azureSubscription: '...'
+    ScriptType: 'FilePath'
+    ScriptPath: '$(Build.Repository.LocalPath)/myScript.ps1'
+    azurePowerShellVersion: 'LatestVersion'
+```
+
 ### Argument / Parameter mapping
+
+**Only available in File Path experience**.
+
+#### Argument : YAML experience
+
+#### Argument : Classic experience
 
 ### PowerShell Get-AzKeyVaultSecret
 
