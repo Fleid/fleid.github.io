@@ -71,7 +71,7 @@ From there we can look at each syntax:
 
 ### 3.1 Input macro
 
-**Only available inline**, [more info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline).
+**Only available for inline scripts**, [more info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline).
 
 With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
 
@@ -118,7 +118,7 @@ With the variable group `myDefaultVariableGroup` **not** linked to KeyVault, hol
 
 #### 3.2.1 Inherited Env : YAML experience
 
-For Inline and File script the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`)
+Both for Inline and File script, the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`)
 
 ```YAML
 
@@ -158,24 +158,26 @@ steps:
 #### 3.2.2 Inherited Env : Classic experience
 
 In the classic experience, both the local variable and the variable group must be declared in the `Variables` tab beforehand.
-Then for Inline and File script the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`).
+Then both for Inline and File script the syntax is similar : `$env:normalVariable` (as in `Write-Host "Inherited ENV from normal VG: $env:normalVariable"`).
 
-NB : The variable name will be altered as follow ([ref](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#understand-variable-syntax)):
+**NB** : The variable name will be altered as follow ([ref](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#understand-variable-syntax)):
 
 > Name is upper-cased, . replaced with _
 
+Knowing that PowerShell is not case sensitive, the only issue is the . to _ switcheroo.
+
 ![Screenshot of Azure DevOps : Inherited environment variable for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/inherited_inline_classic.png?raw=true)
 
-*[figure 2 - Screenshot of Azure DevOps : Inherited environment variable for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/inherited_inline_classic.png?raw=true)*
+*[figure 4 - Screenshot of Azure DevOps : Inherited environment variable for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/inherited_inline_classic.png?raw=true)*
 
 ### 3.3 Mapped environment variable
 
-**Only available via the YAML experience.** This is the [recommended solution](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#secret-variables) in YAML.
+**Only available via the YAML experience.** This is the [recommended solution](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#secret-variables) in YAML (too bad it's not available for releases yet).
 
 With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
 The inline script can reference the secret directly via : `$env:MY_MAPPED_ENV_VAR_KV` (as in `Write-Host "Mapped ENV from KeyVault VG: $env:MY_MAPPED_ENV_VAR_KV"`).
 
-The key statement here being the `env:` [parameter](https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#task) required at each task.
+The **key statement** here being the `env:` [parameter](https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#task) required at each task.
 
 ```YAML
 trigger:
@@ -214,11 +216,52 @@ steps:
 
 ### 3.4 Argument / Parameter mapping
 
-**Only available in File Path experience**.
+**Only available for File Path scripts**, since arguments don't exist inline.
+
+With the variable group `myVariableGroup` linked to KeyVault, giving access to the secret `kvTestSecret`.
+
+Independently of the experiences, the PowerShell script will require a [binding statement](https://www.red-gate.com/simple-talk/sysadmin/powershell/how-to-use-parameters-in-powershell/) at the top:
+
+```PowerShell
+[CmdletBinding()]
+param ([string] $Arg1)
+
+# Using arguments:
+Write-Host "Argument from the KeyVault VG: $Arg1"
+```
 
 #### 3.4.1 Argument : YAML experience
 
+On the YAML side, the task will use the `ScriptArguments` parameter, each arguments following `-Arg1 $(var1) -Arg2 $(var2)`. Since this is a string generated at runtime and fed as is to PowerShell, variables should be enclosed with `"..."` if they can contain spaces: `-Arg1 "$(var1)" -Arg2 "$(var2)"`.
+
+```YAML
+trigger:
+  - master
+  
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+- group: myVariableGroup
+  
+steps:
+- task: AzurePowerShell@4
+  displayName: 'Azure PowerShell script - file path'
+  inputs:
+    azureSubscription: '...'
+    ScriptType: 'FilePath'
+    ScriptPath: '$(Build.Repository.LocalPath)/testArg.ps1'
+    ScriptArguments: '-Arg1 "$(kvTestSecret)"'
+    azurePowerShellVersion: 'LatestVersion'
+```
+
 #### 3.4.2 Argument : Classic experience
+
+The same syntax will be used to pass arguments in the Classic experience: `-Arg1 "$(kvTestSecret)" -Arg2 "$(myOtherSecret)"`.
+
+![Screenshot of Azure DevOps : Argument mapping for file script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/argument_file_classic.png?raw=true)
+
+*[figure 5 - Screenshot of Azure DevOps : Argument mapping for file script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/argument_file_classic.png?raw=true)*
 
 ### 3.5 PowerShell Get-AzKeyVaultSecret
 
