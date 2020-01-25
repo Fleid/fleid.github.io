@@ -7,7 +7,7 @@ categories: ALM Azure ASA DevOps
 
 # Retrieving Azure Key Vault secrets with PowerShell in Azure DevOps pipelines
 
-## Context
+## 1. Context
 
 I [recently](https://www.eiden.ca/asa-alm-104/) got confused while trying to retrieve secrets stored in [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) from a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). I could not figure out the proper syntax to do so (and I was [not alone](https://stackoverflow.com/questions/58607998/dynamicallly-get-keyvault-secret-in-azure-devops-powershell-script)).
 
@@ -22,9 +22,9 @@ What should have been a straightforward scenario took a bit of planning. Now I k
 - the Azure Pipelines [experience](https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/pipelines-get-started?view=azure-devops&tabs=yaml) in Build and Release:  YAML vs Classic
 - the script type of the [Azure PowerShell](https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=azure-devops) task: inline vs file script
 
-## TL/DR
+## 2. TL/DR
 
-Here are the syntaxes that work, see below for details on each syntax:
+Here are the wirings that work, see below for details on each syntax:
 
 ![Schema of the available options](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/recap.png?raw=true)
 
@@ -32,12 +32,12 @@ Here are the syntaxes that work, see below for details on each syntax:
 
 - **YAML** experience / **Inline** script
   - Input macro
-  - Mapped environment variable (recommended in the doc)
+  - Mapped environment variable (recommended in the doc but YAML not available in Release)
   - PowerShell Get-AzKeyVaultSecret
 
 - **YAML** experience / **File Path** script
   - Argument / Parameter mapping
-  - Mapped environment variable  (recommended in the doc)
+  - Mapped environment variable  (recommended in the doc but YAML not available in Release)
   - PowerShell Get-AzKeyVaultSecret
 
 - **Classic** experience / **Inline** script
@@ -48,15 +48,15 @@ Here are the syntaxes that work, see below for details on each syntax:
   - Argument / Parameter mapping
   - PowerShell Get-AzKeyVaultSecret
 
-## Options
+## 3. Options
 
-**Before trying anything else**, it's required to create a variable group linked to the Key Vault (see [middle section of that article](https://www.eiden.ca/asa-alm-104/) if necessary).
+**Before anything else**, we need to create a variable group linked to the Key Vault we plan to use. For that see the [middle section of that article](https://www.eiden.ca/asa-alm-104/).
 
 To be noted:
 
 > When trying to link the KeyVault in the Variable Group, the **authentication** process can hang indefinitely. It can be solved in KeyVault, by manually creating an **access policy** for the Azure DevOps project application principal (service account) with List/Get permissions on Secrets. The application principal id can be found in the Azure DevOps project **settings** (bottom left), **Service Connections** tab, editing the right subscription and going `use the full version of the service connection dialog`. It should be under `Service principal client ID`.
 
-### Input macro
+### 3.1 Input macro
 
 **Only available inline**, [more info](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#set-variables-in-pipeline).
 
@@ -97,7 +97,7 @@ Then the inline script can reference the secret directly via : `$(kvTestSecret)`
 
 *[figure 3 - Screenshot of Azure DevOps : Input macro syntax for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/macro_inline_classic.png?raw=true)*
 
-### Inherited environment variable
+### 3.2 Inherited environment variable
 
 This syntax is the default for variables **not** coming from Key Vault (local variable and default variable groups). It will **not** return Key Vault secrets in any configuration.
 
@@ -155,7 +155,7 @@ NB : The variable name will be altered as follow ([ref](https://docs.microsoft.c
 
 *[figure 2 - Screenshot of Azure DevOps : Inherited environment variable for inline script in classic experience](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202001_azure_devops_keyvault/inherited_inline_classic.png?raw=true)*
 
-### Mapped environment variable
+### 3.3 Mapped environment variable
 
 **Only available via the YAML experience.** This is the [recommended solution](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#secret-variables) in YAML.
 
@@ -199,7 +199,7 @@ steps:
     azurePowerShellVersion: 'LatestVersion'
 ```
 
-### Argument / Parameter mapping
+### 3.4 Argument / Parameter mapping
 
 **Only available in File Path experience**.
 
@@ -207,9 +207,9 @@ steps:
 
 #### Argument : Classic experience
 
-### PowerShell Get-AzKeyVaultSecret
+### 3.5 PowerShell Get-AzKeyVaultSecret
 
-## Resources
+## 4 Resources
 
 Azure Pipelines >
 
