@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Retrieving Azure KeyVault secrets with PowerShell in Azure DevOps Pipelines"
+title:  "Retrieving Azure Key Vault secrets with PowerShell in Azure DevOps Pipelines"
 date:   2020-01-07 10:00:00 -0700
 categories: ALM Azure ASA DevOps
 ---
@@ -9,7 +9,7 @@ categories: ALM Azure ASA DevOps
 
 ## 1. Context
 
-I [recently](https://www.eiden.ca/asa-alm-104/) struggled a bit to find the right way to retrieve secrets from [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) with a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). I could not figure out the proper syntax to do so (and I was [not alone](https://stackoverflow.com/questions/58607998/dynamicallly-get-keyvault-secret-in-azure-devops-powershell-script) in the situation).
+I [recently](https://www.eiden.ca/asa-alm-104/) struggled a bit to find the right way to retrieve secrets from [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) within a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). I could not figure out the proper syntax to do so (and I was [not alone](https://stackoverflow.com/questions/58607998/dynamicallly-get-keyvault-secret-in-azure-devops-powershell-script) in the situation).
 
 This was for the [CI/CD pipeline](https://www.eiden.ca/asa-alm-100/) of my [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction) project hosted in Azure DevOps. At some point it needed to perform some **ARM Template deployments** via a PowerShell task, and figuring out the syntax to get access to my connection strings stored in Key Vault in the script was not as easy as I expected.
 
@@ -49,7 +49,6 @@ Here are the wirings that work, see below for details on each syntax:
 - **Classic** experience / **File Path** script
   - Argument / Parameter mapping
   - PowerShell Get-AzKeyVaultSecret
-
 
 ***
 
@@ -192,7 +191,7 @@ variables:
 steps:
 
 - task: AzurePowerShell@4
-  env: 
+  env:
     MY_MAPPED_ENV_VAR_KV: $(kvTestSecret)
   displayName: 'Azure PowerShell script - inline'
   inputs:
@@ -204,7 +203,7 @@ steps:
     azurePowerShellVersion: 'LatestVersion'
 
 - task: AzurePowerShell@4
-  env: 
+  env:
     MY_MAPPED_ENV_VAR_KV: $(kvTestSecret)
   displayName: 'Azure PowerShell script - file path'
   inputs:
@@ -294,7 +293,7 @@ pool:
 steps:
 
 - task: AzurePowerShell@4
-  env: 
+  env:
   displayName: 'Azure PowerShell script - inline'
   inputs:
     azureSubscription: '...'
@@ -306,7 +305,7 @@ steps:
     azurePowerShellVersion: 'LatestVersion'
 
 - task: AzurePowerShell@4
-  env: 
+  env:
   displayName: 'Azure PowerShell script - file path'
   inputs:
     azureSubscription: '...'
