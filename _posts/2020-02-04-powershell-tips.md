@@ -13,6 +13,8 @@ This article contains my notes from completing [Learn PowerShell in a Month of L
 
 As I've recently been using **PowerShell** [more](https://www.eiden.ca/asa-alm-103/) and [more](https://github.com/Fleid/asa.unittest), I've decided to take the time to learn it properly.
 
+![Sample of PowerShell code - look at me flexing my mad](https://github.com/Fleid/fleid.github.io/blob/master/_posts/202002_powershell_tips/ps_sample.png?raw=true)
+
 I had bought [Learn PowerShell in a Month of Lunches](https://www.manning.com/books/learn-windows-powershell-in-a-month-of-lunches-third-edition) previously but never had taken the time to go through it. So I did. And I don't regret it. Both the format and the content are fantastic, **I highly recommend it to anyone looking to get a strong foundation** in PowerShell.
 
 Now why would one want a good foundation in [PowerShell](https://docs.microsoft.com/en-us/powershell/)? Because everyone needs to be comfortable in at least one [shell](https://en.wikipedia.org/wiki/Shell_%28computing%29). It is fairly simple and yields huge benefits in automating all sort of processes via the command line. PowerShell is of course the perfect candidate when you're deep in Microsoft territory (so easy to leverage in Azure). And since it's [cross platform](https://github.com/powershell/powershell) now!
