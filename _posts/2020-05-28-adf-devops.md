@@ -40,7 +40,7 @@ We are going to look at the constraints guiding our design, and how to plan our 
 
 ### Branching strategy
 
-This being an enterprise deployment, we will use [source control](https://docs.microsoft.com/en-us/azure/data-factory/source-control). ADF integrates with GitHub and Azure DevOps natively. We'll use Azure DevOps in the rest of the article as the [third party tool](https://azurebi-docs.jppp.org/vsts-extensions/azure-data-factory-deploy.html?tabs=docs-open) we might need lives there. 
+This being an enterprise deployment, we will use [source control](https://docs.microsoft.com/en-us/azure/data-factory/source-control). ADF integrates with GitHub and Azure DevOps natively. We'll use Azure DevOps in the rest of the article as the [third party tool](https://azurebi-docs.jppp.org/vsts-extensions/azure-data-factory-deploy.html?tabs=docs-open) we might need lives there.
 
 If we're collaborating on a code base, using Git, then we'll need to think about our [branching strategy](https://docs.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops). Because **most of the issues we can observe in ADF enterprise deployments are solved by making a conscious choice about that branching strategy**, and enforcing it.
 
@@ -61,13 +61,13 @@ These constraints, specific to ADF, will guide how we'll distribute factory inst
 >1. A factory has a single [managed identity](https://docs.microsoft.com/en-us/azure/data-factory/data-factory-service-identity)
 >1. A factory has a single `collaboration`/`adf_publish` branch pair. The `collaboration` branch holds JSON artifacts, it is the source branch for the internal build process to generates ("publish") the ARM templates in the `adf_publish` branch
 >1. The default `collaboration` branch is recommended to be `master`, but it can be changed
->1. The `adf_publish` branch holds ARM templates from different factories in different subfolders
+>1. The `adf_publish` branch holds ARM templates from different factories in different sub-folders
 >1. Triggers can only be started from the collaboration branch
 >1. We do not merge ARM Templates. Any collaboration must be done in JSON land
 
 Point **1** will give us that we should **distribute factory instances on repositories boundaries**. If we allocate repositories per *{ team x project x solution }*, then each of these should get at least a distinct factory instance.
 
-Points **3** and **2** will give us that we should **also distribute factory instances on data sources authentication boundaries**. If we generate individual credentials to each developers for data sources and sinks, then each developer will need a data factory instance to get their own managed identity. All of these factories are tied to the same repository, code is moved between branches via pull requests. If we're okay with those credentials being shared in a team, then a shared factory instance will do fine. 
+Points **3** and **2** will give us that we should **also distribute factory instances on data sources authentication boundaries**. If we generate individual credentials to each developers for data sources and sinks, then each developer will need a data factory instance to get their own managed identity. All of these factories are tied to the same repository, code is moved between branches via pull requests. If we're okay with those credentials being shared in a team, then a shared factory instance will do fine.
 
 Points **7**, **4** and **2** will give us that we should **also distribute factory instances to prevent collisions of triggered runs with the release pipeline**. If the team is fine with debugging (no triggers) there is no need here. If the team needs to trigger runs but is okay sharing an instance together then dedicate a factory for releasing (wired to the CI/CD pipeline) in addition to the development one (used for triggers). If each developer needs to trigger runs independently then allocate a factory instance per developer and add one instance for releasing. All of these factories are tied to the same repository, code is moved between branches via pull requests.
 
