@@ -9,7 +9,7 @@ categories: ALM Azure ADF DevOps
 
 [Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/introduction) (ADF) is the native batch data service platform, aka [ETL/ELT](https://en.wikipedia.org/wiki/Extract,_transform,_load) (Extract, Transform and Load), available in the Microsoft public cloud. In its v2 version (let's forget about v1), ADF offers orchestration and data movement as a service. It's quite good at that.
 
-[![Screenshot of the main page of the ADF UI](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/adf_intro.PNG)]((https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/adf_intro.PNG))
+[![Screenshot of the main page of the ADF UI](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/adf_intro.PNG)](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/adf_intro.PNG)
 
 ADF offers multiple features that makes it a true cloud native ETL/ELT:
 
@@ -73,7 +73,9 @@ Points **3** and **2** will give us that we should **also distribute factory ins
 
 Points **7**, **4** and **2** will give us that we should **also distribute factory instances to prevent collisions of triggered runs with the release pipeline**. If the team is fine with debugging (no triggers) there is no need here. If the team needs to trigger runs but is okay sharing an instance together then dedicate a factory for releasing (wired to the CI/CD pipeline) in addition to the development one (used for triggers). If each developer needs to trigger runs independently then allocate a factory instance per developer and add one instance for releasing. All of these factories are tied to the same repository, code is moved between branches via pull requests.
 
-Schema of examples
+Let's illustrate that with a couple of examples
+
+[![1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)
 
 The other points will guide our implementations below.
 
