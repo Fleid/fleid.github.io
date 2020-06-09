@@ -36,7 +36,15 @@ There are 2 aspects to take into account when deciding how to standardize develo
 
 Let's jump into the details.
 
-## Design considerations
+## Deployment scope : atomicity of a release
+
+ADF artifacts are defined in a JSON format. Here we'll need to decide whether to deploy these artifacts via ARM templates (default approach, we will need to "build" those templates) or to publish them individually instead.
+
+**ARM templates deployments** are the ones covered in the [documentation](https://docs.microsoft.com/en-us/azure/data-factory/continuous-integration-deployment). They are supported natively in the ADF UI but only offer **all-or-nothing deployments**. They rely on the integrated **publish** process that build ARM Templates in the `adf_publish` branch from the JSON definitions of artifacts in the `collaboration` branch. Since there can be only one pair of `collaboration`-`adf_publish` branches, this will impose constraints on the developer experience as we'll discuss below.
+
+**JSON based deployments** require [custom wiring](https://docs.microsoft.com/en-us/powershell/module/Az.DataFactory/?view=azps-4.1.0) and/or a [3rd party tool](https://github.com/liprec/vsts-publish-adf), but offer a-la-carte deployments. It's an involved setup that brings a solution to a problem that in my opinion can be avoided by properly scoping and allocating ADF instances instead as discussed below. We also need to be mindful about the fact that if it is straightforward to find what has been updated between 2 branches (`master` and `release`, via `git diff`), it is more complicated for what's been removed (due to Git renaming "optimization"). This means that to enable JSON based deployment, we will need to build a script that prunes what has been deployed in Production. Never a good prospect.
+
+## Development scope : Factory instances allocation guidance
 
 We are going to look at the constraints guiding our design, and how to plan our platform around them. This starts with our branching strategy.
 
@@ -56,7 +64,7 @@ The main difference with the [simple one recommended](https://docs.microsoft.com
 
 Please go read the [full article](https://www.feval.ca/posts/Atomic-Change-Flow-A-simple-yet-very-effective-source-control-workflow/). We will see how this will impact ARM Templates based deployments.
 
-### Development scope : Factory instances allocation guidance
+### Design guidance
 
 The following constraints, specific to ADF, will guide how we should distribute factory instances. Note that since factories only incur costs when used, there should be no impact cost-wise in distributing the same activities on 1 or N factories.
 
@@ -77,7 +85,7 @@ Points **7**, **4** and **2** will give us that we should **also distribute fact
 
 The other points will explain some implementation details later.
 
-### Development scope : examples
+### Deployment examples
 
 Let's illustrate that with a couple of examples, using **ARM Templates deployments**.
 
@@ -96,37 +104,15 @@ Switching to another team, that requires individual managed identity for each de
 ![1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)
 *[Figure 3 : 1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)*
 
-
-### Deployment scope : atomicity of a release
-
-ADF artifacts are defined in a JSON format. This first aspect is about choosing to deploy these artifacts via ARM templates (default approach, we will need to "build" those templates) or to publish them directly.
-
-**ARM templates deployments** are the ones covered in the [documentation](https://docs.microsoft.com/en-us/azure/data-factory/continuous-integration-deployment). They are supported natively in the ADF UI but only offer **all-or-nothing deployments**. They rely on the integrated **publish** process that build ARM Templates (in the `adf_publish` branch) from the JSON definitions of artifacts in the collaboration branch. Since there can be only one pair of collaboration-publish branches, this will impose constraints on the developer experience. We'll dig into that.
-
-**JSON based deployments** require [custom wiring](https://docs.microsoft.com/en-us/powershell/module/Az.DataFactory/?view=azps-4.1.0) and/or a [3rd party tool](https://github.com/liprec/vsts-publish-adf), but offer a-la-carte deployments. It's an involved setup that brings a solution to a problem that in my opinion can be avoided by properly scoping and allocating ADF instances instead - see below for that.
-
-## Implementations
-
-A game changer requirement is related to security. If each developer needs to have a separate identity context (ala passthrough/user authentication in SSIS), then the best approach is to leverage Managed Identity and associate one ADF instance to each developer...
-
-1 Project = 1 code repository
-2 Developers working on their own features (branches)
-4 Scenario
-
-- Release 1 : A + B all the way to production
-- Release 2 : moving things in and out of Release candidate
-- Release 3 : removing a pipeline artefact from prod
-- Release 3 : C + D to test, only D all the way to production, and rebase C
-- Hotfix
-
-### Shared factory with ARM template deployments
-
-### Shared factory with JSON based deployments
-
-### Individual factories with ARM templates deployments
-
-### Individual factories with JSON based deployments
+We can see that the branching strategy we choose has a deep impact on the overall setup. Above `master` is protected from the current release work, we can regenerate release candidate or feature branches from it in case anything goes wrong. See Charles' article above on how to manage the lifecycle of release/collaboration branches.
 
 ## Conclusion
 
-Alternatives
+The steps to planning an enterprise deployment of Azure Data Factory are the following:
+
+1. Define a branching strategy
+1. Understand the options and pick a deployment scope. Most should use ARM Templates
+1. Understand the options and pick a development scope, primarily depending on requirements around triggers and managed identities
+1. From there, design the factory instance distribution model and align the branch lifecycle as illustrated in the examples above
+
+Note that this will not be a unique combination for the entire organization, but rather a process that will be repeated for every ADF project/team.
