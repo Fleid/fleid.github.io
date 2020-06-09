@@ -9,7 +9,7 @@ categories: ALM Azure ADF DevOps
 
 [Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/introduction) (ADF) is the native batch data service platform, aka [ETL/ELT](https://en.wikipedia.org/wiki/Extract,_transform,_load) (Extract, Transform and Load), available in the Microsoft public cloud. In its v2 version (let's forget about v1), ADF offers orchestration and data movement as a service. It's quite good at that.
 
-[![Screenshot of the main page of the ADF UI](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/adf_intro.PNG)](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/adf_intro.PNG)
+![Screenshot of the main page of the ADF UI](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/adf_intro.PNG)
 
 ADF offers multiple features that makes it a true cloud native ETL/ELT:
 
@@ -46,9 +46,11 @@ This being an enterprise deployment, we will use [source control](https://docs.m
 
 If we're collaborating on a code base, using Git, then we'll need to think about our [branching strategy](https://docs.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops). **Most of the issues we can observe in ADF enterprise deployments are solved by making a conscious choice about that branching strategy**, and enforcing it.
 
-I personally recommend the [Atomic Change Flow](https://www.feval.ca/posts/Atomic-Change-Flow-A-simple-yet-very-effective-source-control-workflow/) approach from [Charles Feval](https://twitter.com/cfe84), summed up in this schema of his :
+I personally recommend the [Atomic Change Flow](https://www.feval.ca/posts/Atomic-Change-Flow-A-simple-yet-very-effective-source-control-workflow/) approach from [Charles Feval](https://twitter.com/cfe84):
 
-[![Charles' diagram of the Atomic Change Flow, content are detailed in the original article](https://www.feval.ca/img/atomic-flow/Basic-idea.png)](https://www.feval.ca/posts/Atomic-Change-Flow-A-simple-yet-very-effective-source-control-workflow/)
+![Charles' diagram of the Atomic Change Flow](https://www.feval.ca/img/atomic-flow/Basic-idea.png)
+
+*[figure 1 : Charles' diagram of the Atomic Change Flow](https://www.feval.ca/img/atomic-flow/Basic-idea.png)]*
 
 The main difference with the [simple one recommended](https://docs.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops) by Microsoft, is that `master` always stays in sync with Production. We work on feature branches, merge them into a `release` branch that gets pushed through the delivery pipeline to production. We only merge the release branch back into `master` if/when the release is successful.
 
@@ -73,11 +75,19 @@ Points **3** and **2** will give us that we should **also distribute factory ins
 
 Points **7**, **4** and **2** will give us that we should **also distribute factory instances to prevent collisions of triggered runs with the release pipeline**. If the team is fine with debugging (no triggers) there is no need here. If the team needs to trigger runs but is okay sharing an instance together then dedicate a factory for releasing (wired to the CI/CD pipeline) in addition to the development one (used for triggers). If each developer needs to trigger runs independently then allocate a factory instance per developer and add one instance for releasing. All of these factories are tied to the same repository, code is moved between branches via pull requests.
 
-Let's illustrate that with a couple of examples
+Let's illustrate that with a couple of examples, using **ARM Templates deployments**.
 
-[![1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)
+The most basic deployment will support a team working on a single project/repo, sharing a single managed identity (or not using the managed identity at all but sharing credentials anyway), and mostly debugging.
 
-The other points will guide our implementations below.
+![1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)
+*[Figure 2 : 1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)*
+
+After some time, that team realizes that triggering runs in development means polluting the CI/CD pipeline with code that may not be ready to be released. A way to solve that is to put a release factory instance between the dev and QA ones.
+
+![1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)
+*[Figure 2 : 1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)*
+
+
 
 ### Deployment scope : atomicity of a release
 
