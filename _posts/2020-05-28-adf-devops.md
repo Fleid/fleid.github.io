@@ -14,7 +14,7 @@ categories: ALM Azure ADF DevOps
 ADF offers multiple features that makes it a true cloud native ETL/ELT:
 
 - an **orchestration engine** (via [pipelines](https://docs.microsoft.com/en-us/azure/data-factory/concepts-pipelines-activities) and [triggers](https://docs.microsoft.com/en-us/azure/data-factory/concepts-pipeline-execution-triggers)) that **can call external services** in addition to...
-- ...two native **data movement engines**: [mapping data flows](https://docs.microsoft.com/en-us/azure/data-factory/concepts-data-flow-overview) (poor name if you ask me since it has nothing to do with maps) running Spark under the covers and [wrangling data flows](https://docs.microsoft.com/en-us/azure/data-factory/wrangling-data-flow-overview) that leverages the Power Query engine
+- ...two native **data movement engines**: [mapping data flows](https://docs.microsoft.com/en-us/azure/data-factory/concepts-data-flow-overview) (poor name if you ask me since it has nothing to do with maps) running Spark under the cover and [wrangling data flows](https://docs.microsoft.com/en-us/azure/data-factory/wrangling-data-flow-overview) that leverages the Power Query engine
 - a metadata repository ([linked services](https://docs.microsoft.com/en-us/azure/data-factory/concepts-linked-services), [datasets](https://docs.microsoft.com/en-us/azure/data-factory/concepts-datasets-linked-services))
 - a credentials manager (but let's use [Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/store-credentials-in-key-vault) instead)
 - a web IDE with debugging capabilities: the [ADF UI](https://docs.microsoft.com/en-us/azure/data-factory/quickstart-create-data-factory-portal)
