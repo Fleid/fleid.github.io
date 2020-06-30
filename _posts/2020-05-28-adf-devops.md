@@ -120,7 +120,9 @@ Here are the design considerations we are working with:
 
 - A SHIR is an agent first installed on a machine (VM, on-prem server...), then registered to a single factory instance
 - In the repository, a SHIR registration is just another JSON artifact, located in the `\integrationRuntime\` sub-folder. It's quite minimalist (`{"name": "shir-name","properties": {"type": "SelfHosted"}}`), which means the actual wiring happens under the cover, hidden from us
-- Once created in a factory instance, a SHIR can be [shared with](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#create-a-shared-self-hosted-integration-runtime-in-azure-data-factory) / *linked from* other factory instances
+- Once created in a factory instance, a SHIR can be [shared with](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#create-a-shared-self-hosted-integration-runtime-in-azure-data-factory) / [linked from](https://azure.microsoft.com/en-us/blog/sharing-a-self-hosted-integration-runtime-infrastructure-with-multiple-data-factories/) other factory instances
+
+Before going further, let's remember that there is currently no graphical UI to change the registration of a SHIR agent running on a machine. But there are [scripts located](https://github.com/MicrosoftDocs/azure-docs/issues/7956) in the install folder (something like `C:\Program Files\Microsoft Integration Runtime\X.Y\PowerShellScript\RegisterIntegrationRuntime.ps1`, use `-` plus tab/autocompletion to discover parameters).
 
 ### SHIR for single factory setup
 
@@ -136,7 +138,7 @@ Each factory will have to go through the process of registering its own SHIR, si
 
 Now if we want to re-use SHIR across environments, we need to switch to **shared mode across the board**. It's easier to do so than to mix shared and dedicated, since the JSON definition structure is different, and would require some scripting to be altered in the release pipeline.
 
-We can deploy the shared SHIR in one or multiple infrastructure factory instances (used only to host those, separated from project code). The release pipeline will update the SHIR LinkedId property to point to the right SHIR when moving through environments.
+We can deploy the shared SHIR in one or multiple **infrastructure** factory instances (used only to host those, separated from project code). The release pipeline will update the SHIR `LinkedId` property to point to the right SHIR when moving through environments.
 
 Here also, each factory will have to go through the process of linking the SHIR, since the underlying wiring still needs to happen.
 
@@ -150,9 +152,9 @@ I expect most deployments to use different SHIR across environments here, if onl
 
 We will have similar options when addressing **multiple development factory instances**: provision a SHIR for each factory in the development scope and each environment, or share them across the board from an infrastructure factory(ies).
 
-About distinct : interest in regards to AKV limitation? 
+## AHAHA
 
-Similar as for the single dev factory setup, we can deploy the shared SHIR in one or multiple infrastructure factory instances. The release pipeline will here also update the SHIR LinkedId property to point to the right SHIR when moving through environments.
+Similar as for the single dev factory setup, we can deploy the shared SHIR in one or multiple **infrastructure** factory instances. The release pipeline will here also update the SHIR `LinkedId` property to point to the right SHIR when moving through environments.
 
 ![Schema of shared SHIR across environments for multiple dev factory instances](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_multiple_shared.png)
 
