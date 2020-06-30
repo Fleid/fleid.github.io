@@ -25,7 +25,7 @@ Here we won't talk about moving data round, but rather planning an enterprise de
 
 ## Summary
 
-There are 2 aspects to take into account when deciding how to standardize development practices in ADF:
+There are 3 aspects to take into account when deciding how to standardize development practices in ADF:
 
 1. **Deployment scope** : What is the atomicity of a release:
     - All-or-nothing deployments, a factory being deployed entirely every time, will rely on ARM Templates
@@ -33,6 +33,9 @@ There are 2 aspects to take into account when deciding how to standardize develo
 1. **Development scope** : How to allocate factory instances, taking current ADF constraints into account, it boils down to:
     - Can our development group share the same [managed identity](https://docs.microsoft.com/en-us/azure/data-factory/data-factory-service-identity)? Else we need to allocate one factory instance to each developer/team that needs their own identity
     - Do we need [triggered runs](https://docs.microsoft.com/en-us/azure/data-factory/concepts-pipeline-execution-triggers#trigger-execution) in development, or is [debugging](https://docs.microsoft.com/en-us/azure/data-factory/iterative-development-debugging) good enough? For the former we'll need to dedicate a factory instance
+1. **Infrastructure scope** : Which artifacts are considered infrastructure and not code, and should be treated as such
+    - [Self-hosted integration runtime](https://docs.microsoft.com/en-us/azure/data-factory/concepts-integration-runtime) (SHIR), the piece of software we need to deploy in private networks to operate there
+    - Credential managers, focusing on [Azure Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/how-to-use-azure-key-vault-secrets-pipeline-activities)
 
 Let's jump into the details.
 
@@ -89,26 +92,65 @@ Let's illustrate that with a couple of examples, using **ARM Templates deploymen
 
 The most basic deployment will support a team working on a single project/repo, sharing a single managed identity (or not using the managed identity at all but sharing credentials anyway), and mostly debugging.
 
-![1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)
-*[Figure 2 : 1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)*
+![Schema of 1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)
+*[Figure 2 : Schema of 1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)*
 
 After some time, that team realizes that triggering runs in development means polluting the CI/CD pipeline with code that may not be ready to be released. A way to solve that is to put a release factory instance between the dev and QA ones.
 
-![1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)
-*[Figure 3 : 1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)*
+![Schema of 1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)
+*[Figure 3 : Schema of 1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)*
 
 Switching to another team, that requires individual managed identities for each developer.
 
-![1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)
-*[Figure 3 : 1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)*
+![Schema of 1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)
+*[Figure 4 : Schema of 1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)*
 
 We can see that the branching strategy we choose has a deep impact on the overall setup. Above, `master` is protected from the current release work, we can regenerate release candidates or feature branches from it in case anything goes wrong.
+
+## Infrastructure scope
+
+### Self-hosted integration runtime (SHIR)
+
+We won't cover what are [SHIR](https://docs.microsoft.com/en-us/azure/data-factory/concepts-integration-runtime), why they are needed or how [to deploy](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime) them. Instead we will focus on how to set them up in our topology.
+
+Here are the design considerations we are working with:
+
+- A SHIR is an agent first installed on a machine (VM, on-prem server...), then registered to a single factory instance
+- In the repository, a SHIR registration is just another JSON artifact, located in the `\integrationRuntime\` sub-folder. It's quite minimalist (`{"name": "shir-name","properties": {"type": "SelfHosted"}}`), which means the actual wiring happens under the cover, hidden from us
+- Once created in a factory instance, a SHIR can be [shared with](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#create-a-shared-self-hosted-integration-runtime-in-azure-data-factory) / *linked from* other factory instances
+
+### SHIR for single factory setup
+
+When we have **only one development factory instance**, the only dimension we have to manage are the **environments**: are we re-using the same SHIR across dev, QA and production, or are we deploying multiple ones?
+
+If we want each environment to have its own dedicated SHIR (so 3 environments means 3 distinct agents, installed on 3 distinct machines), then we must only make sure that they share the same name. Then the minimalist JSON definition will go through the release pipeline untouched.
+
+![Schema of one SHIR per environment for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_dedicated.png)
+*[Figure 5 : Schema of one SHIR per environment for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_dedicated.png)*
+
+Now if we want to re-use SHIR across environments, we need to switch to **shared mode across the board**. It's easier to do so than to mix shared and dedicated, since the JSON definition structure is different, and would require some scripting to be altered in the release pipeline.
+
+We can deploy the shared SHIR in one or multiple infrastructure factory instances (used only to host those, separated from project code). The release pipeline will update the SHIR LinkedId property to point to the right SHIR when moving through environments.
+
+![Schema of shared SHIR across environments for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_shared.png)
+*[Figure 6 : Schema of shared SHIR across environments for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_shared.png)*
+
+We will use the same patterns when supporting multiple factory instances in development.
+
+### SHIR for multiple factory instance setup
+
+When we have **multiple development factory instances**, we will have to share SHIR both across them and environments.
+
+### Azure Key Vault
+
+[Azure Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/how-to-use-azure-key-vault-secrets-pipeline-activities)
 
 ## Conclusion
 
 The steps to planning an enterprise deployment of Azure Data Factory are the following:
 
 1. Define a branching strategy
+1. Understand what is infrastructure and what is code, design the right lifecycle for each
 1. Understand the options and pick a deployment scope. Most should use ARM Templates
 1. Understand the options and pick a development scope, primarily depending on requirements around triggers and managed identities
 1. From there, design the factory instance distribution model
