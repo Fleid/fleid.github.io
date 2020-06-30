@@ -93,16 +93,19 @@ Let's illustrate that with a couple of examples, using **ARM Templates deploymen
 The most basic deployment will support a team working on a single project/repo, sharing a single managed identity (or not using the managed identity at all but sharing credentials anyway), and mostly debugging.
 
 ![Schema of 1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)
+
 *[Figure 2 : Schema of 1 repo for 1 project, shared authentication, debug only setup](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_debug.png)*
 
 After some time, that team realizes that triggering runs in development means polluting the CI/CD pipeline with code that may not be ready to be released. A way to solve that is to put a release factory instance between the dev and QA ones.
 
 ![Schema of 1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)
+
 *[Figure 3 : Schema of 1 repo for 1 project, shared authentication, triggers enabled](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_shared_triggers.png)*
 
 Switching to another team, that requires individual managed identities for each developer.
 
 ![Schema of 1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)
+
 *[Figure 4 : Schema of 1 repo for 1 project, individual authentication](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/instances_each_triggers.png)*
 
 We can see that the branching strategy we choose has a deep impact on the overall setup. Above, `master` is protected from the current release work, we can regenerate release candidates or feature branches from it in case anything goes wrong.
@@ -125,25 +128,35 @@ When we have **only one development factory instance**, the only dimension we ha
 
 If we want each environment to have its own dedicated SHIR (so 3 environments means 3 distinct agents, installed on 3 distinct machines), then we must only make sure that they share the same name. Then the minimalist JSON definition will go through the release pipeline untouched.
 
+Each factory will have to go through the process of registering its own SHIR, since the underlying wiring still needs to happen.
+
 ![Schema of one SHIR per environment for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_dedicated.png)
+
 *[Figure 5 : Schema of one SHIR per environment for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_dedicated.png)*
 
 Now if we want to re-use SHIR across environments, we need to switch to **shared mode across the board**. It's easier to do so than to mix shared and dedicated, since the JSON definition structure is different, and would require some scripting to be altered in the release pipeline.
 
 We can deploy the shared SHIR in one or multiple infrastructure factory instances (used only to host those, separated from project code). The release pipeline will update the SHIR LinkedId property to point to the right SHIR when moving through environments.
 
+Here also, each factory will have to go through the process of linking the SHIR, since the underlying wiring still needs to happen.
+
 ![Schema of shared SHIR across environments for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_shared.png)
+
 *[Figure 6 : Schema of shared SHIR across environments for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_shared.png)*
 
-We will use the same patterns when supporting multiple factory instances in development.
+I expect most deployments to use different SHIR across environments (production isolation)
 
 ### SHIR for multiple factory instance setup
 
-When we have **multiple development factory instances**, we will have to share SHIR both across them and environments.
+We will have similar options when addressing **multiple development factory instances**: provision a SHIR for each factory in the development scope and each environment, or share them across the board from an infrastructure factory(ies).
+
+
 
 ### Azure Key Vault
 
 [Azure Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/how-to-use-azure-key-vault-secrets-pipeline-activities)
+
+### SHIR + AKV
 
 ## Conclusion
 
