@@ -144,13 +144,19 @@ Here also, each factory will have to go through the process of linking the SHIR,
 
 *[Figure 6 : Schema of shared SHIR across environments for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_shared.png)*
 
-I expect most deployments to use different SHIR across environments (production isolation)
+I expect most deployments to use different SHIR across environments here, if only to better protect production from dev/QA workloads.
 
 ### SHIR for multiple factory instance setup
 
 We will have similar options when addressing **multiple development factory instances**: provision a SHIR for each factory in the development scope and each environment, or share them across the board from an infrastructure factory(ies).
 
+About distinct : interest in regards to AKV limitation? 
 
+Similar as for the single dev factory setup, we can deploy the shared SHIR in one or multiple infrastructure factory instances. The release pipeline will here also update the SHIR LinkedId property to point to the right SHIR when moving through environments.
+
+![Schema of shared SHIR across environments for multiple dev factory instances](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_multiple_shared.png)
+
+*[Figure 6 : Schema of shared SHIR across environments for multiple dev factory instances](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_multiple_shared.png)*
 
 ### Azure Key Vault
 
