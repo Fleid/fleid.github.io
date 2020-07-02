@@ -160,14 +160,15 @@ The thing is we don't deploy SHIR in complete isolation: most of the time they a
 Trying to make things short:
 
 - The benefit of **dedicating SHIR** to each factory instance would be to allow for each developer to get a distinct networking path to their own data sources
-- That implies that each developer use different data sources, and not just different credentials
+- That implies that each developer use different physical data sources for the same logical one, and not just different credentials
+  - The same table is actually loaded from different servers depending on the developer. That's original but why not?
 - Which means we are serious about security, which means we are using Azure Key Vault to store those secrets (and not the native ADF option)
 - But there is currently no way to dedicate a Key Vault instance the same way we're dedicating SHIR (a benefit of their hidden wiring)
 - So the developers can only read secrets coming from the same Key Vault
 - Since we're using a single repository, that means the same secrets
 - Which breaks the whole equation
 
-While I'm lobbying the ADF team to solve that gap, the only solution for those requirements would be to stop using the same repository.
+Currently the only solution that satisfies these unusual requirements would be to stop using the same repository in ADF.
 
 Moving on, we can focus on **sharing SHIR**. As before, we will deploy the shared SHIR in one or multiple **infrastructure** factory instances. The release pipeline will here also update the SHIR `LinkedId` property to point to the right SHIR when moving through environments.
 
@@ -185,7 +186,7 @@ Key Vaults are declared as linked services in ADF. The JSON declaration file is 
 
 We will leverage Key Vaults to store the credentials of data sources that don't support Managed Identity.
 
-Since there is currently no way to dedicate Key Vaults to factory instances sharing the same repo, **we will have to share those credentials in development wether we share factory instances or not**. Contrary to SHIR, there is no hidden wiring, so the `baseUrl` value is stored in the repo. Maintaining different values for each developer branch plus the release and master branches through the feature lifecycle is certainly possible but will be painful. I'm lobbying the ADF team to either get Key Vault linked services a hidden wiring like SHIR, have them source their `baseUrl` from global parameters, and/or allow us to lock JSON declaration files in the ADF UI so their value is not saved to the repo but kept local. We'll see how that goes.
+Since there is currently no way to dedicate Key Vaults to factory instances sharing the same repo, **we will have to share those credentials in development wether we share factory instances or not**. Because contrary to SHIR, there is no hidden wiring for Key Vault linked services: the `baseUrl` value is stored in the repository. Maintaining different values for each developer, the release and master branches through the feature lifecycle is certainly possible but will be painful. I'm lobbying the ADF team to either get Key Vault linked services a hidden wiring like SHIR, allow us to source their `baseUrl` from global parameters, and/or allow us to lock JSON declaration files in the ADF UI so their value is not saved to the repository but kept local. We'll see how that goes.
 
 The release pipeline will update the `baseUrl` property to point to the right Key Vault instance when moving through environments. For a single development factory instance setup:
 
@@ -209,6 +210,7 @@ The steps to planning an enterprise deployment of Azure Data Factory are the fol
 1. Understand what is infrastructure and what is code, design the right lifecycle for each
 1. Understand the options and pick a deployment scope. Most should use ARM Templates
 1. Understand the options and pick a development scope, primarily depending on requirements around triggers and managed identities
+1. Define an infrastructure topology
 1. From there, design the factory instance distribution model
 1. Go through the entire lifecycle of features and releases and check that nothing in ADF will prevent it to flow freely (see Charles' article above on how to deal with issues)
 
