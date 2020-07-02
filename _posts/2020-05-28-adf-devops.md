@@ -45,7 +45,7 @@ ADF artifacts are defined in a JSON format. Here we'll need to decide whether to
 
 **ARM templates deployments** are the ones covered in the [documentation](https://docs.microsoft.com/en-us/azure/data-factory/continuous-integration-deployment). They are supported natively in the ADF UI but only offer **all-or-nothing deployments**. They rely on the integrated **publish** process that builds ARM Templates (in the `adf_publish` branch) from the JSON definitions of artifacts (in the `collaboration` branch). Since there can be only one pair of `collaboration`-`adf_publish` branches per factory instance, this will impose constraints on the developer experience, as we'll discuss below.
 
-**JSON based deployments** require [custom wiring](https://docs.microsoft.com/en-us/powershell/module/Az.DataFactory/?view=azps-4.1.0) and/or a [3rd party tool](https://github.com/liprec/vsts-publish-adf), but offer a-la-carte deployments. It's an involved setup that brings a solution to a problem that in my opinion can be avoided by properly scoping and allocating ADF instances instead, as discussed below. We also need to be mindful about the fact that if it is straightforward to find what has been updated between 2 branches (`master` and `release`, via `git diff`), it is more complicated for what's been removed (due to Git renaming "optimization"). This means that to enable JSON based deployments, we will need to build a script that prunes what has been deployed in Production. Never a good prospect.
+**JSON based deployments** require [custom wiring](https://docs.microsoft.com/en-us/powershell/module/Az.DataFactory/?view=azps-4.1.0) and/or a [3rd party tool](https://github.com/liprec/vsts-publish-adf), but offer [a-la-carte deployments](https://sqlplayer.net/2020/06/publish-adf-from-code-to-service-easily/). It's an involved setup that brings a solution to a problem that in my opinion can be avoided by properly scoping and allocating ADF instances instead, as discussed below. We also need to be mindful about the fact that if it is straightforward to find what has been updated between 2 branches (`master` and `release`, via `git diff`), it is more complicated for what's been removed (due to Git renaming "optimization"). This means that to enable JSON based deployments, we will need to build a script that prunes what has been deployed in Production. Never a good prospect.
 
 ## Development scope : Factory instances allocation guidance
 
@@ -122,11 +122,11 @@ Here are the design considerations we are working with:
 - In the repository, a SHIR registration is just another JSON artifact, located in the `\integrationRuntime\` sub-folder. It's quite minimalist (`{"name": "shir-name","properties": {"type": "SelfHosted"}}`), which means the actual wiring happens under the cover, hidden from us
 - Once created in a factory instance, a SHIR can be [shared with](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#create-a-shared-self-hosted-integration-runtime-in-azure-data-factory) / [linked from](https://azure.microsoft.com/en-us/blog/sharing-a-self-hosted-integration-runtime-infrastructure-with-multiple-data-factories/) other factory instances
 
-Before going further, let's remember that there is currently no graphical UI to change the registration of a SHIR agent running on a machine. But there are [scripts located](https://github.com/MicrosoftDocs/azure-docs/issues/7956) in the install folder (something like `C:\Program Files\Microsoft Integration Runtime\X.Y\PowerShellScript\RegisterIntegrationRuntime.ps1`, use `-` plus tab/autocompletion to discover parameters). Very handy if we need to update a registration.
+> Before going further, let's remember that there is currently no graphical UI to change the registration of a SHIR agent running on a machine. But there are [scripts located](https://github.com/MicrosoftDocs/azure-docs/issues/7956) in the install folder (something like `C:\Program Files\Microsoft Integration Runtime\X.Y\PowerShellScript\RegisterIntegrationRuntime.ps1`, use `-` plus tab/autocompletion to discover parameters). Very handy if we need to update a registration.
 
 ### SHIR for single factory setup
 
-When we have **only one development factory instance**, the only dimension we have to manage are the **environments**: are we re-using the same SHIR across dev, QA and production, or are we deploying multiple ones?
+When we have **only one development factory instance** (so not even a release one), the only dimension we have to manage are the **environments**: are we re-using the same SHIR across dev, QA and production, or are we deploying multiple ones?
 
 If we want each environment to have its own dedicated SHIR (so 3 environments means 3 distinct agents, installed on 3 distinct machines), then we must only make sure that they share the same name. Then the minimalist JSON definition will go through the release pipeline untouched.
 
@@ -162,7 +162,7 @@ Trying to make things short:
 - The benefit of **dedicating SHIR** to each factory instance would be to allow for each developer to get a distinct networking path to their own data sources
 - That implies that each developer use different data sources, and not just different credentials
 - Which means we are serious about security, which means we are using Azure Key Vault to store those secrets (and not the native ADF option)
-- But there is currently no way to dedicate a Key Vault instance the same way we're dedicating SHIR
+- But there is currently no way to dedicate a Key Vault instance the same way we're dedicating SHIR (a benefit of their hidden wiring)
 - So the developers can only read secrets coming from the same Key Vault
 - Since we're using a single repository, that means the same secrets
 - Which breaks the whole equation
@@ -181,13 +181,13 @@ Overall I think this is the most convenient setup for most teams.
 
 Another important piece of the puzzle is [Azure Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/how-to-use-azure-key-vault-secrets-pipeline-activities). We won't discuss why and [how to use Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/store-credentials-in-key-vault) in data factory, only how to set it up in our context.
 
-Key Vaults are declared as linked services in ADF. The JSON declaration file is located in the `\linkedService\` sub-folder. Its format is simple (a `name` and a `baseURl` pointing to the Key Vault instance `https://<azureKeyVaultName>.vault.azure.net"`). To be noted that Key Vault linked services leverage the managed identity of the factory instance for authentication. When handling multiple factories, we should automate that registration.
+Key Vaults are declared as linked services in ADF. The JSON declaration file is located in the `\linkedService\` sub-folder. Its format is simple (a `name` and a `baseUrl` pointing to the Key Vault instance `https://<azureKeyVaultName>.vault.azure.net"`). To be noted that Key Vault linked services leverage the managed identity of the factory instance for authentication. When handling multiple factories, we should automate that registration.
 
-We will leverage Key Vaults to store the credentials of data sources that don't support Managed Identity. But since there is currently no way to dedicate Key Vaults to factory instances sharing the same repo, we will have to share those credentials in development wether we share factory instances or not.
+We will leverage Key Vaults to store the credentials of data sources that don't support Managed Identity.
 
-The release pipeline will update the `baseUrl` property to point to the right Key Vault instance when moving through environments.
+Since there is currently no way to dedicate Key Vaults to factory instances sharing the same repo, **we will have to share those credentials in development wether we share factory instances or not**. Contrary to SHIR, there is no hidden wiring, so the `baseUrl` value is stored in the repo. Maintaining different values for each developer branch plus the release and master branches through the feature lifecycle is certainly possible but will be pain. I'm lobbying the ADF team to either get Key Vault linked services a hidden wiring like SHIR, have them source their `baseUrl` from global parameters, and/or allow us to lock JSON declaration files in the ADF UI so their value is not saved to the repo but kept local. We'll see how that goes.
 
-For a single development factory instance setup:
+The release pipeline will update the `baseUrl` property to point to the right Key Vault instance when moving through environments. For a single development factory instance setup:
 
 ![Schema of Key Vault wiring across environments for single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/akv_single.png)
 
