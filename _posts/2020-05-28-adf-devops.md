@@ -82,7 +82,7 @@ The following constraints, specific to ADF, will guide how we should distribute 
 
 Point **1** will give us that we should **distribute factory instances on repository boundaries**. If we allocate repositories per *{ team x project x solution }*, then each of these should get at least one distinct factory instance.
 
-Points **3** and **2** will give us that we should **also distribute factory instances on data source/sink authentication boundaries**. If we generate individual credentials to each developers for linked services, then each developer will need a data factory instance to get their own managed identity. All of these factories are tied to the same repository, code is moved between branches via pull requests. On the other end, if we're okay with those credentials being shared in a team, then a shared factory instance will do fine.
+Points **3** and **2** will give us that we should **also distribute factory instances on data source/sink authentication boundaries**. If we generate individual credentials to each developers for linked services, then each developer will need a data factory instance to get their own managed identity. All of these factories are tied to the same repository, code is moved between branches via pull requests. On the other end, if we're okay with those credentials being shared in a team, then a shared factory instance will do fine. Please note that this applies for services for which [ADF has a connector](https://docs.microsoft.com/en-us/azure/data-factory/data-factory-service-identity#overview) supporting managed identities, others we will cover later when discussing Key Vault.
 
 Points **7**, **4** and **2** will give us that we should **also distribute factory instances to prevent collisions of triggered runs with the release pipeline**. If the team is fine with debugging (no triggers) there is no need here. If the team needs to trigger runs but is okay sharing an instance together then dedicate a factory for releasing (wired to the CI/CD pipeline) in addition to the development one (used for triggers). If each developer needs to trigger runs independently then allocate a factory instance per developer and add one instance for releasing. All of these factories are tied to the same repository, code is moved between branches via pull requests.
 
@@ -122,7 +122,7 @@ Here are the design considerations we are working with:
 - In the repository, a SHIR registration is just another JSON artifact, located in the `\integrationRuntime\` sub-folder. It's quite minimalist (`{"name": "shir-name","properties": {"type": "SelfHosted"}}`), which means the actual wiring happens under the cover, hidden from us
 - Once created in a factory instance, a SHIR can be [shared with](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#create-a-shared-self-hosted-integration-runtime-in-azure-data-factory) / [linked from](https://azure.microsoft.com/en-us/blog/sharing-a-self-hosted-integration-runtime-infrastructure-with-multiple-data-factories/) other factory instances
 
-Before going further, let's remember that there is currently no graphical UI to change the registration of a SHIR agent running on a machine. But there are [scripts located](https://github.com/MicrosoftDocs/azure-docs/issues/7956) in the install folder (something like `C:\Program Files\Microsoft Integration Runtime\X.Y\PowerShellScript\RegisterIntegrationRuntime.ps1`, use `-` plus tab/autocompletion to discover parameters).
+Before going further, let's remember that there is currently no graphical UI to change the registration of a SHIR agent running on a machine. But there are [scripts located](https://github.com/MicrosoftDocs/azure-docs/issues/7956) in the install folder (something like `C:\Program Files\Microsoft Integration Runtime\X.Y\PowerShellScript\RegisterIntegrationRuntime.ps1`, use `-` plus tab/autocompletion to discover parameters). Very handy if we need to update a registration.
 
 ### SHIR for single factory setup
 
@@ -138,7 +138,7 @@ Each factory will have to go through the process of registering its own SHIR, si
 
 Now if we want to re-use SHIR across environments, we need to switch to **shared mode across the board**. It's easier to do so than to mix shared and dedicated, since the JSON definition structure is different, and would require some scripting to be altered in the release pipeline.
 
-We can deploy the shared SHIR in one or multiple **infrastructure** factory instances (used only to host those, separated from project code). The release pipeline will update the SHIR `LinkedId` property to point to the right SHIR when moving through environments.
+We can deploy the shared SHIR in one or multiple **infrastructure** factory instances. This is done to be able to store their definition in a separate repository, isolated from the release pipeline. The release pipeline will update the SHIR `LinkedId` property to point to the right SHIR when moving through environments.
 
 Here also, each factory will have to go through the process of linking the SHIR, since the underlying wiring still needs to happen.
 
@@ -146,25 +146,60 @@ Here also, each factory will have to go through the process of linking the SHIR,
 
 *[Figure 6 : Schema of shared SHIR across environments for a single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_single_shared.png)*
 
-I expect most deployments to use different SHIR across environments here, if only to better protect production from dev/QA workloads.
+I expect most deployments to use shared SHIR in dev/qa, and a dedicated (but still shared) one for production, to better isolate workloads. This is the most resource effective and most future proof setup, for a little added complexity.
 
 ### SHIR for multiple factory instance setup
 
-We will have similar options when addressing **multiple development factory instances**: provision a SHIR for each factory in the development scope and each environment, or share them across the board from an infrastructure factory(ies).
+We will have similar options when addressing **multiple development factory instances**:
 
-## AHAHA
+- provision a SHIR for each factory in the development scope and each environment
+- or share them across the board from an infrastructure factory(ies)
 
-Similar as for the single dev factory setup, we can deploy the shared SHIR in one or multiple **infrastructure** factory instances. The release pipeline will here also update the SHIR `LinkedId` property to point to the right SHIR when moving through environments.
+The thing is we don't deploy SHIR in complete isolation: most of the time they are tied to a Key Vault deployment. We'll talk about Key Vault later, but here we have to note that a limitation of how ADF currently handles Key Vault makes the full dedicated SHIR option moot, in my opinion.
+
+Trying to make things short:
+
+- The benefit of **dedicating SHIR** to each factory instance would be to allow for each developer to get a distinct networking path to their own data sources
+- That implies that each developer use different data sources, and not just different credentials
+- Which means we are serious about security, which means we are using Azure Key Vault to store those secrets (and not the native ADF option)
+- But there is currently no way to dedicate a Key Vault instance the same way we're dedicating SHIR
+- So the developers can only read secrets coming from the same Key Vault
+- Since we're using a single repository, that means the same secrets
+- Which breaks the whole equation
+
+While I'm lobbying the ADF team to solve that gap, the only solution for those requirements would be to stop using the same repository.
+
+Moving on, we can focus on **sharing SHIR**. As before, we will deploy the shared SHIR in one or multiple **infrastructure** factory instances. The release pipeline will here also update the SHIR `LinkedId` property to point to the right SHIR when moving through environments.
 
 ![Schema of shared SHIR across environments for multiple dev factory instances](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_multiple_shared.png)
 
-*[Figure 6 : Schema of shared SHIR across environments for multiple dev factory instances](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_multiple_shared.png)*
+*[Figure 7 : Schema of shared SHIR across environments for multiple dev factory instances](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/shir_multiple_shared.png)*
+
+Overall I think this is the most convenient setup for most teams.
 
 ### Azure Key Vault
 
-[Azure Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/how-to-use-azure-key-vault-secrets-pipeline-activities)
+Another important piece of the puzzle is [Azure Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/how-to-use-azure-key-vault-secrets-pipeline-activities). We won't discuss why and [how to use Key Vault](https://docs.microsoft.com/en-us/azure/data-factory/store-credentials-in-key-vault) in data factory, only how to set it up in our context.
 
-### SHIR + AKV
+Key Vaults are declared as linked services in ADF. The JSON declaration file is located in the `\linkedService\` sub-folder. Its format is simple (a `name` and a `baseURl` pointing to the Key Vault instance `https://<azureKeyVaultName>.vault.azure.net"`). To be noted that Key Vault linked services leverage the managed identity of the factory instance for authentication. When handling multiple factories, we should automate that registration.
+
+We will leverage Key Vaults to store the credentials of data sources that don't support Managed Identity. But since there is currently no way to dedicate Key Vaults to factory instances sharing the same repo, we will have to share those credentials in development wether we share factory instances or not.
+
+The release pipeline will update the `baseUrl` property to point to the right Key Vault instance when moving through environments.
+
+For a single development factory instance setup:
+
+![Schema of Key Vault wiring across environments for single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/akv_single.png)
+
+*[Figure 8 : Schema of Key Vault wiring across environments for single dev factory instance](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/akv_single.png)*
+
+### Global picture
+
+Finally, here is a global picture of dedicated development factory instance setup, with shared self hosted integration runtime and Key Vault:
+
+![Global picture](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/global_picture.png)
+
+*[Figure 9 : Global picture](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202005_adf_devops/global_picture.png)*
 
 ## Conclusion
 
