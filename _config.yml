@@ -9,6 +9,9 @@ description: Mostly about Data Engineering, Data Warehousing and Business Intell
 # Your name to show in the footer
 author: Florian Eiden
 
+# Base URL to serve from
+#baseurl: https://www.fleide.ca
+
 # --- List of links in the navigation bar --- #
 
 navbar-links:
