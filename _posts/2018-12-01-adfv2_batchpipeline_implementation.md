@@ -2,7 +2,7 @@
 layout: post
 title:  "Batch Pipeline Project Review : Notable Implementation Details"
 date:   2018-12-01 12:00:00 -0700
-categories: architecture ADFv2 Azure batch
+tags: Architecture ADFv2 Azure ETL
 ---
 
 Notable implementation details of a hybrid batch data pipeline using ADFv2.

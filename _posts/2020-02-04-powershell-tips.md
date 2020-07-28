@@ -2,7 +2,7 @@
 layout: post
 title:  "PowerShell Tips"
 date:   2020-01-07 10:00:00 -0700
-categories: Azure DevOps PowerShell Script
+tags: Azure DevOps PowerShell
 ---
 
 Tips and notes for better PowerShell scripting.

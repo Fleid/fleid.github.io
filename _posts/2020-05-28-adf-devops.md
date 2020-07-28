@@ -2,7 +2,7 @@
 layout: post
 title:  "Azure Data Factory release pipeline considerations with Azure DevOps"
 date:   2020-05-28 10:00:00 -0700
-categories: ALM Azure ADF DevOps
+tags: ALM Azure ADFv2 DevOps Architecture ETL
 ---
 
 Considerations for planning an Azure Data Factory enterprise deployment: what to release, how to deploy.
