@@ -5,15 +5,15 @@ date:   2018-12-01 11:00:00 -0700
 categories: architecture ADFv2 Azure batch
 ---
 
-# Azure Data Factory v2 - Batch Pipeline Project Review : Developer Experience and ALM
+Developer Experience and ALM considerations for a hybrid batch data pipeline using ADFv2.
+
+<!--more-->
 
 This is article is part of a series:
 
-1. [Architecture discussion](https://florianeiden.ghost.io/hybrid-batch-adr/)
+1. [Architecture discussion]({% post_url 2018-12-01-adfv2_batchpipeline_adr %})
 2. **ALM and Infrastructure** *<- you are here
-3. [Notable implementation details](https://florianeiden.ghost.io/hybrid-batch-details/)
-
-Original publication date : [2018-12](https://github.com/Fleid/fleid.github.io/blob/master/_posts/2018-12-01-adfv2_batchpipeline_alm.md)
+3. [Notable implementation details]({% post_url 2018-12-01-adfv2_batchpipeline_implementation %})
 
 ## General environment: Azure
 
@@ -89,4 +89,6 @@ To call that Logic App in a Data Factory pipeline, we will copy/paste the **HTTP
 
 ## Up next
 
-[Implementation Details](https://florianeiden.ghost.io/hybrid-batch-details/)
+1. [Architecture discussion]({% post_url 2018-12-01-adfv2_batchpipeline_adr %})
+2. ~~ALM and Infrastructure~~
+3. **[Notable implementation details]({% post_url 2018-12-01-adfv2_batchpipeline_implementation %})**

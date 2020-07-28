@@ -5,15 +5,15 @@ date:   2018-12-01 10:00:00 -0700
 categories: architecture ADFv2 Azure batch
 ---
 
-# Azure Data Factory v2 - Batch Pipeline Project Review : Architecture
+Architecture Decision Record for a hybrid batch data pipeline using Azure Data Factory v2 (ADF).
+
+<!--more-->
 
 This is article is part of a series:
 
 1. **Architecture discussion** *<- you are here*
-2. [ALM and Infrastructure](https://florianeiden.ghost.io/hybrid-batch-alm/)
-3. [Notable implementation details](https://florianeiden.ghost.io/hybrid-batch-details/)
-
-Original publication date : [2018-12](https://github.com/Fleid/fleid.github.io/blob/master/_posts/2018-12-01-adfv2_batchpipeline_adr.md)
+2. [ALM and Infrastructure]({% post_url 2018-12-01-adfv2_batchpipeline_alm %})
+3. [Notable implementation details]({% post_url 2018-12-01-adfv2_batchpipeline_implementation %})
 
 ## Scenario
 
@@ -67,12 +67,12 @@ We also wanted to test the product as it's currently positioned as the default c
 
 ### Compute Engines
 
-ADFv2 can call to multiple compute engines to execute activities: 
+ADFv2 can call to multiple compute engines to execute activities:
 
 - internal ones called [Integration Runtimes](https://docs.microsoft.com/en-us/azure/data-factory/concepts-integration-runtime) (IR)
 - [external ones](https://docs.microsoft.com/en-us/azure/data-factory/transform-data) such as HDInsight, Databricks, Azure SQL via stored procedures...
 
-All the native [activities](https://docs.microsoft.com/en-us/azure/data-factory/concepts-pipelines-activities) of ADFv2 require an IR. The good thing is that every factory comes with a default IR (autoResolve IR). The less good thing is that its networking configuration can't be changed, and we will need to do that for the native sFTP activity to reach inside the VNet. To solve that issue we will provision a [Windows VM](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#prerequisites) in that VNet, [install](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#install-and-register-self-hosted-ir-from-the-download-center) a **self-hosted IR there**, and register it with our Factory. 
+All the native [activities](https://docs.microsoft.com/en-us/azure/data-factory/concepts-pipelines-activities) of ADFv2 require an IR. The good thing is that every factory comes with a default IR (autoResolve IR). The less good thing is that its networking configuration can't be changed, and we will need to do that for the native sFTP activity to reach inside the VNet. To solve that issue we will provision a [Windows VM](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#prerequisites) in that VNet, [install](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime#install-and-register-self-hosted-ir-from-the-download-center) a **self-hosted IR there**, and register it with our Factory.
 
 In the factory, when we'll create the linked services for our different storage accounts (see Storage below), we will configure them to use the right IR (see [connectVia property](https://docs.microsoft.com/en-us/azure/data-factory/concepts-datasets-linked-services#linked-service-json)): either self-hosted (to reach in the VNet) or autoResolve (only one able to convert CSVs to Parquet).
 
@@ -121,4 +121,6 @@ There are [tons of them](https://www.jamesserra.com/archive/2019/01/what-product
 
 ## Up next
 
-[ALM and Infrastructure](https://florianeiden.ghost.io/hybrid-batch-alm/)
+1. ~~Architecture discussion~~
+2. **[ALM and Infrastructure]({% post_url 2018-12-01-adfv2_batchpipeline_alm %})**
+3. [Notable implementation details]({% post_url 2018-12-01-adfv2_batchpipeline_implementation %})

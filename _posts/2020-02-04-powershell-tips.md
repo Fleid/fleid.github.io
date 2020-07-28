@@ -5,7 +5,9 @@ date:   2020-01-07 10:00:00 -0700
 categories: Azure DevOps PowerShell Script
 ---
 
-# PowerShell tips
+Tips and notes for better PowerShell scripting.
+
+<!--more-->
 
 This article contains my notes from completing [Learn PowerShell in a Month of Lunches](https://www.manning.com/books/learn-windows-powershell-in-a-month-of-lunches-third-edition).
 
@@ -65,7 +67,7 @@ In the spirit of avoiding the [online recipe pattern](https://www.theguardian.co
 
 ## Context
 
-As I've recently been using **PowerShell** [more](https://www.eiden.ca/asa-alm-103/) and [more](https://github.com/Fleid/asa.unittest), I've decided to take the time to learn it properly.
+As I've recently been using **PowerShell** [more]({% post_url 2019-12-30-asa-alm103 %}) and [more](https://github.com/Fleid/asa.unittest), I've decided to take the time to learn it properly.
 
 I had bought [Learn PowerShell in a Month of Lunches](https://www.manning.com/books/learn-windows-powershell-in-a-month-of-lunches-third-edition) previously but never had taken the time to go through it. So I did. And I don't regret it. Both the format and the content are fantastic, **I highly recommend it to anyone looking to get a strong foundation** in PowerShell.
 

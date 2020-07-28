@@ -5,7 +5,9 @@ date:   2019-12-02 10:00:00 -0700
 categories: monitoring Azure eventhub kafka
 ---
 
-# Calculating Consumer Lag in Azure Event Hubs
+How to generate a Consumer Lag metric for streaming applications using Azure Event Hub
+
+<!--more-->
 
 ## Consumer Lag
 

@@ -5,13 +5,15 @@ date:   2020-01-07 10:00:00 -0700
 categories: ALM Azure ASA DevOps
 ---
 
-# Retrieving Azure Key Vault secrets with PowerShell in Azure DevOps pipelines
+Alternative options to retrieve secrets from Azure Key Vault for a PowerShell script running in Azure DevOps Pipelines.
+
+<!--more-->
 
 ## 1. Context
 
-I [recently](https://www.eiden.ca/asa-alm-104/) struggled a bit to find the right way to retrieve secrets from [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) within a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). I could not figure out the proper syntax to do so (and I was [not alone](https://stackoverflow.com/questions/58607998/dynamicallly-get-keyvault-secret-in-azure-devops-powershell-script) in the situation).
+I [recently]({% post_url 2020-01-07-asa-alm104 %}) struggled a bit to find the right way to retrieve secrets from [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) within a [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7) script running in [Azure DevOps Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). I could not figure out the proper syntax to do so (and I was [not alone](https://stackoverflow.com/questions/58607998/dynamicallly-get-keyvault-secret-in-azure-devops-powershell-script) in the situation).
 
-This was for the [CI/CD pipeline](https://www.eiden.ca/asa-alm-100/) of my [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction) project hosted in Azure DevOps. At some point it needed to perform some **ARM Template deployments** via a PowerShell task, and figuring out the syntax to get access to my connection strings stored in Key Vault in the script was not as easy as I expected.
+This was for the [CI/CD pipeline]({% post_url 2019-12-06-asa-alm100 %}) of my [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction) project hosted in Azure DevOps. At some point it needed to perform some **ARM Template deployments** via a PowerShell task, and figuring out the syntax to get access to my connection strings stored in Key Vault in the script was not as easy as I expected.
 
 ![Schema focusing on the release pipeline](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201912_asa_alm101/asa_alm104_goal.png?raw=true)
 
@@ -54,7 +56,7 @@ Here are the wirings that work, see below for details on each syntax:
 
 ## 3. Options
 
-**Before anything else**, we need to create a variable group linked to the Key Vault we plan to use. For that see the [middle section of that article](https://www.eiden.ca/asa-alm-104/).
+**Before anything else**, we need to create a variable group linked to the Key Vault we plan to use. For that see the [middle section of that article]({% post_url 2020-01-07-asa-alm104 %}).
 
 To be noted:
 

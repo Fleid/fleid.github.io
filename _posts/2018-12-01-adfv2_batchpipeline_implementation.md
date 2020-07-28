@@ -5,18 +5,21 @@ date:   2018-12-01 12:00:00 -0700
 categories: architecture ADFv2 Azure batch
 ---
 
-# Azure Data Factory v2 - Batch Pipeline Project Review : Notable Implementation Details
+Notable implementation details of a hybrid batch data pipeline using ADFv2.
+
+<!--more-->
+
 This is article is part of a series:
 
-1. [Architecture discussion](https://florianeiden.ghost.io/hybrid-batch-adr/)
-2. [ALM and Infrastructure](https://florianeiden.ghost.io/hybrid-batch-alm/)
+1. [Architecture discussion]({% post_url 2018-12-01-adfv2_batchpipeline_adr %})
+2. [ALM and Infrastructure]({% post_url 2018-12-01-adfv2_batchpipeline_alm %})
 3. **Notable implementation details** *<- you are here*
 
 Original publication date : [2018-12](https://github.com/Fleid/fleid.github.io/blob/master/_posts/2018-12-01-adfv2_batchpipeline_implementation.md)
 
 ## Architecture
 
-As a reminder, here is the solution architecture we established earlier ([see the first article of the series for more details](https://florianeiden.ghost.io/hybrid-batch-adr/)):
+As a reminder, here is the solution architecture we established earlier ([see the first article of the series for more details]({% post_url 2018-12-01-adfv2_batchpipeline_adr %})):
 
 ![Schema illustrating the architecture](https://github.com/Fleid/fleid.github.io/blob/master/_posts/201812_adfv2_batchpipeline/technicalArchitecture.png?raw=true)
 

@@ -5,7 +5,9 @@ date:   2020-05-28 10:00:00 -0700
 categories: ALM Azure ADF DevOps
 ---
 
-# Azure Data Factory release pipeline considerations with Azure DevOps
+Considerations for planning an Azure Data Factory enterprise deployment: what to release, how to deploy.
+
+<!--more-->
 
 [Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/introduction) (ADF) is the native batch data processing service, aka [ETL/ELT](https://en.wikipedia.org/wiki/Extract,_transform,_load) (Extract, Transform and Load), available in the Microsoft public cloud. In its v2 version (let's forget about v1), ADF offers orchestration and data movement as a service. It's quite good at that.
 
