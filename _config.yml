@@ -188,6 +188,7 @@ exclude:
   - README.md
   - screenshot.png
   - docs/
+  - deploy.ps1
 
 plugins:
   - jekyll-paginate
