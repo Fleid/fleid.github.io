@@ -3,6 +3,7 @@ layout: post
 title:  "Batch Pipeline Project Review : Architecture"
 date:   2018-12-01 10:00:00 -0700
 tags: Architecture ADFv2 Azure ETL
+permalink: /hybrid-batch-adr/
 ---
 
 Architecture Decision Record for a hybrid batch data pipeline using Azure Data Factory v2 (ADF).

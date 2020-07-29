@@ -3,6 +3,7 @@ layout: post
 title:  "Calculating Consumer Lag in Azure Event Hubs"
 date:   2019-12-02 10:00:00 -0700
 tags: Azure EventHub Kafka Streaming Implementation
+permalink: /eh-consumer-lag/
 ---
 
 How to generate a Consumer Lag metric for streaming applications using Azure Event Hub

@@ -3,6 +3,7 @@ layout: post
 title:  "Retrieving Azure Key Vault secrets with PowerShell in Azure DevOps Pipelines"
 date:   2020-01-07 10:00:00 -0700
 tags: ALM Azure DevOps KeyVault PowerShell
+permalink: /devops-keyvault-powershell/
 ---
 
 Alternative options to retrieve secrets from Azure Key Vault for a PowerShell script running in Azure DevOps Pipelines.

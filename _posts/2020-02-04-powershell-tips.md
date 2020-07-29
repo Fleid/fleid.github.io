@@ -3,6 +3,7 @@ layout: post
 title:  "PowerShell Tips"
 date:   2020-01-07 10:00:00 -0700
 tags: Azure DevOps PowerShell
+permalink: /powershell-tips/
 ---
 
 Tips and notes for better PowerShell scripting.

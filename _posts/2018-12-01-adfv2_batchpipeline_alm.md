@@ -3,6 +3,7 @@ layout: post
 title:  "Batch Pipeline Project Review : Developer Experience and ALM"
 date:   2018-12-01 11:00:00 -0700
 tags: Architecture ADFv2 Azure ETL
+permalink: /hybrid-batch-alm/
 ---
 
 Developer Experience and ALM considerations for a hybrid batch data pipeline using ADFv2.
