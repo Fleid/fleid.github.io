@@ -27,10 +27,8 @@ $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Ac
 $ctx = $storageAccount.Context
 Enable-AzStorageStaticWebsite -Context $ctx -IndexDocument "index.html" -ErrorDocument404Path "404.html"
 
-
 bundle exec jekyll clean
 bundle exec jekyll build
-
 
 # CDN endpoint can be done via ARM templates : https://docs.microsoft.com/en-us/azure/cdn/create-profile-endpoint-template
 # For now via Portal > Via the Storage Account blade (from CDN it failed ><). If needed:
@@ -45,7 +43,6 @@ az storage blob upload-batch -s $contentLocalPath -d '$web' --account-name $stor
 
 # Ne pas oublier de purger le CDN a chaque upload
 Get-AzCdnProfile | where-object {$_.Name -eq "eiden-ca"} |  Get-AzCdnEndpoint | Unpublish-AzCdnEndpointContent -PurgeContent "/*"
-
 
 Write-Output $storageAccount.PrimaryEndpoints.Web
 
