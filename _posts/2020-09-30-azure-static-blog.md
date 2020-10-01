@@ -1,20 +1,18 @@
 ---
 layout: post
-title:  "Hosting a blog with a custom domain (root+www) and HTTPS on Azure for $2.5 per month"
+title:  "Hosting a blog with a custom domain and HTTPS on Azure for $2.5 per month"
 date:   2020-09-30 10:00:00 -0700
 tags: Azure AzCLI Design KeyVault PowerShell Meta Jekyll
 permalink: /azure-static-blog/
 ---
 
-A short article giving a high level picture of what's required to set up a static site (blog or other) on Azure, with a custom domain (root and www) with https.
+High level picture of the hosting of a static site on Azure with a custom domain (root and www) and HTTPS.
 
 <!--more-->
 
 This is not a detailed walk-through. Instead I'll link to existing ones on the areas that deserve it.
 
-Noting that $2 out of the 2.5 mentioned in the title are for the custom domain name and the associated SSL certificate for HTTPS. File hosting, CDN and networking in Azure cost less than 50 cents per month for this application.
-
-To be fair, this is not the most read blog of the Internet.
+Noting that $2 out of the 2.5 mentioned in the title are for the custom domain name and the associated SSL certificate for HTTPS. File hosting, CDN and networking in Azure cost less than 50 cents per month for this application. To be fair, this is not the most read blog of the Internet.
 
 Also I'm using [Jekyll](https://jekyllrb.com/) for this blog, and it's been good to me so far.
 
