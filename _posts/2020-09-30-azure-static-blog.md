@@ -2,7 +2,7 @@
 layout: post
 title:  "Hosting a blog with a custom domain (root+www) and HTTPS on Azure for $2.5 per month"
 date:   2020-09-30 10:00:00 -0700
-tags: Azure AzCLI Design KeyVault PowerShell Meta 
+tags: Azure AzCLI Design KeyVault PowerShell Meta Jekyll
 permalink: /azure-static-blog/
 ---
 
@@ -10,9 +10,13 @@ A short article giving a high level picture of what's required to set up a stati
 
 <!--more-->
 
-This is not a detailed walk-through. Instead I'll link to existing ones on the area that deserve it.
+This is not a detailed walk-through. Instead I'll link to existing ones on the areas that deserve it.
 
-Noting that $1.5 out of the 2 mentioned in the tile are for the custom domain name and the associated SSL certificate (https). File hosting, CDN and networking in Azure cost less than 50 cents for this application. To be fair, this is not the most read blog of the Internet.
+Noting that $2 out of the 2.5 mentioned in the title are for the custom domain name and the associated SSL certificate for HTTPS. File hosting, CDN and networking in Azure cost less than 50 cents per month for this application.
+
+To be fair, this is not the most read blog of the Internet.
+
+Also I'm using [Jekyll](https://jekyllrb.com/) for this blog, and it's been good to me so far.
 
 ## Summary
 
@@ -20,10 +24,10 @@ The main components used are:
 
 - From non-Microsoft providers
   - a **custom domain name** from a registrar of our choosing (I'm using [Gandi](https://www.gandi.net/en-CA)) - here `eiden.ca`
-  - a **SSL certificate**, I recommend Namecheap ([PositiveSSL](https://www.namecheap.com/security/ssl-certificates/comodo/positivessl/)) to procure one. This certificate will need to be generated for the custom domain name we created above (we'll see how). **THIS IS IF** you want https for the **root** of a custom domain ([https://eiden.ca](https://eiden.ca)), even if you just want it to redirect to **www**. This was a must have for me, and the reason for the existence of this very article. If you don't care, you can use the included Azure CDN managed certificate (which at the time of writing doesn't support root).
+  - a **SSL certificate** to enable HTTPS, I recommend Namecheap ([PositiveSSL](https://www.namecheap.com/security/ssl-certificates/comodo/positivessl/)) to procure one. This certificate will need to be generated for the custom domain name we created above (we'll see how). **THIS IS IF** you want HTTPS for the **root** of the custom domain ([https://eiden.ca](https://eiden.ca)), even if you just want it to redirect to **www**. This was a must have for me, and the reason for the existence of this very article. If you don't care, you can use the included Azure CDN managed certificate (which at the time of writing doesn't support root).
 - In Azure
   - a **Storage Account** with [static web hosting](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website) enabled, to host our content
-  - a **Key Vault** to help generate the certificate and hold it once issued
+  - a **Key Vault** to help generate the certificate and hold it once issued by the provider
   - a **CDN Profile**, to cache the content and optimize performance and cost
   - a **DNS Zone**, to manage the custom domain and point the traffic towards the CDN profile
 
@@ -97,28 +101,28 @@ Now let's head back to the CDN endpoint to add the custom domains we just create
 
 ## Step 4 : Enabling HTTPS for the CDN Endpoint Custom Domains
 
-We will head back to the first tutorial, but before let's quickly sum up the situation. As I mentioned in the summary, Azure CDN offers managed certificate for https, but at the time of writing they are not available for the root / apex domain.
+We will head back to the first tutorial, but **before let's quickly sum up the situation**. As I mentioned in the summary, Azure CDN offers managed certificate for HTTPS, but at the time of writing they are not available for the root / apex domain.
 
-This is why we need to bring our own.
+This is why we need to bring our own certificate.
 
-Before heading back into the tutorial, let's review the 5 steps of that process:
+Before heading back into the tutorial, let's review the 3 high level steps of that process:
 
-1. In a new Azure Key Vault, create a new certificate that will be issued by a **non-integrated** CA (Namecheap). Contrary to what's in the guide, use **PKCS#12** (even if you don't understand what it means, like me, it's just easier)
-1. Download the CSR (`Certificate Signing Request`) from Azure Key Vault, upload it to your SSL certificate to get processed, get the PKCS#12 file back into Azure Key Vault (`merge signed request`)
-1. Back in the CDN Endpoint, create the custom domains (root and www), with https, using our own certificate, from Key Vault
+1. In a new Azure Key Vault, we will create a new certificate that will be issued by a **non-integrated** CA (Namecheap). **Contrary** to what's in the guide, use **PKCS#12** (even if we don't understand the details, it's just easier)
+1. We will then download the CSR (`Certificate Signing Request`) from Azure Key Vault, upload it to our SSL certificate provider to get processed, get the PKCS#12 file generated back into Azure Key Vault (`merge signed request`)
+1. Back in the CDN Endpoint, we will create the custom domains (root and www), with HTTPS, using our own certificate hosted in Key Vault
 
-So let's head back to [the tutorial](https://www.wrightfully.com/azure-static-website-custom-domain-https) from John for **part 4 and 5** (sorry there's no direct link) explains everything in details.
+So let's head back to [the tutorial](https://www.wrightfully.com/azure-static-website-custom-domain-https) from John for **part 4 and 5** (sorry there's no direct link) that explains everything in details.
 
 ## Step 5 : Adding CDN rules
 
-Finally, we need to add some rules in the CDN Rules engine to sort traffic coming from our domains on both http and https. I settled on having my default domain be the www subdomain (rather than the root/apex), you can adapt the rules below for a different result:
+Finally, we need to add some rules in the CDN Rules engine to sort traffic coming from the root and subdomain on both HTTP and HTTPS. I wanted everything to end on `https://www.eiden.ca`, but you can adapt the rules below for a different result:
 
 - Rule 1 : `http://` requests need to be redirect to `https://www...`
 - Rule 2 : root requests need to be redirected to `https://www...`
 
-For that we can get inspiration from the [step 5](https://the.aamodt.family/rune/2020/01/08/tutorial-azure-website.html#step-5-enforce-https) of the second guide end assemble something looking like:
+For that we can get inspiration from the [step 5](https://the.aamodt.family/rune/2020/01/08/tutorial-azure-website.html#step-5-enforce-https) of the second guide to get something looking like that:
 
-![Step 5 : Screenshot of the CDN endpoint rules engine configuration, detailed below](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202009_azure_static_blog/step5_rules.jpg)
+![Step 5 : Screenshot of the CDN endpoint rules engine configuration, details below](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202009_azure_static_blog/step5_rules.jpg)
 
 *[figure 5 : Rules to manage traffic across domains and protocols](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202009_azure_static_blog/step5_rules.jpg)*
 
@@ -152,10 +156,10 @@ The picture is now complete:
 
 ## Closing
 
-So really, $2 per month?
+So really, $2.5 per month?
 
 - [Namecheap](https://www.namecheap.com/security/ssl-certificates/comodo/positivessl/) SSL Certificate : $9 per year
 - [Gandi](https://www.gandi.net/en-CA) custom domain (`.ca`) : $15 per year
-- Azure everything : $.5 per month
+- Everything [Azure](https://azure.microsoft.com/en-us/free/) : $.5 per month
 
 **Total : $2.5 per month!**
