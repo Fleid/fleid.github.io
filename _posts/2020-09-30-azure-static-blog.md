@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Hosting a blog with a custom domain and https on Azure for $2.5 per month"
+title:  "Hosting a blog with a custom domain (root+www) and HTTPS on Azure for $2.5 per month"
 date:   2020-09-30 10:00:00 -0700
 tags: Azure AzCLI Design KeyVault PowerShell Meta 
 permalink: /azure-static-blog/
