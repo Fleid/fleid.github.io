@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Hosting a blog with a custom domain and https on Azure for $2 per month"
+title:  "Hosting a blog with a custom domain and https on Azure for $2.5 per month"
 date:   2020-09-30 10:00:00 -0700
 tags: Azure AzCLI Design KeyVault PowerShell Meta 
 permalink: /azure-static-blog/
@@ -102,9 +102,10 @@ We will head back to the first tutorial, but before let's quickly sum up the sit
 This is why we need to bring our own.
 
 Before heading back into the tutorial, let's review the 5 steps of that process:
- - 1 : In a new Azure Key Vault, create a new certificate that will be issued by a **non-integrated** CA (Namecheap). Contrary to what's in the guide, use **PKCS#12** (even if you don't understand what it means, like me, it's just easier)
- - 2 : Download the CSR (`Certificate Signing Request`) from Azure Key Vault, upload it to your SSL certificate to get processed, get the PKCS#12 file back into Azure Key Vault (`merge signed request`)
- - 3 : Back in the CDN Endpoint, create the custom domains (root and www), with https, using our own certificate, from Key Vault
+
+1. In a new Azure Key Vault, create a new certificate that will be issued by a **non-integrated** CA (Namecheap). Contrary to what's in the guide, use **PKCS#12** (even if you don't understand what it means, like me, it's just easier)
+1. Download the CSR (`Certificate Signing Request`) from Azure Key Vault, upload it to your SSL certificate to get processed, get the PKCS#12 file back into Azure Key Vault (`merge signed request`)
+1. Back in the CDN Endpoint, create the custom domains (root and www), with https, using our own certificate, from Key Vault
 
 So let's head back to [the tutorial](https://www.wrightfully.com/azure-static-website-custom-domain-https) from John for **part 4 and 5** (sorry there's no direct link) explains everything in details.
 
