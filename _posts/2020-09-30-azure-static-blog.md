@@ -6,7 +6,7 @@ tags: Azure AzCLI Design KeyVault PowerShell Meta
 permalink: /azure-static-blog/
 ---
 
-A short article giving a high level picture of what's required to setup a static site (blog or other) on Azure, with a custom domain (root and www) with https.
+A short article giving a high level picture of what's required to set up a static site (blog or other) on Azure, with a custom domain (root and www) with https.
 
 <!--more-->
 
@@ -19,10 +19,10 @@ Noting that $1.5 out of the 2 mentioned in the tile are for the custom domain na
 The main components used are:
 
 - From non-Microsoft providers
-  - a **custom domain name** from a registrar of your chosing (I'm using [Gandi](https://www.gandi.net/en-CA)) - here `eiden.ca`
-  - a **SSL certificate**, I recommend Namecheap ([PositiveSSL](https://www.namecheap.com/security/ssl-certificates/comodo/positivessl/)) to procure one. This certificate will need to be generated for the custom domain name created above
+  - a **custom domain name** from a registrar of our choosing (I'm using [Gandi](https://www.gandi.net/en-CA)) - here `eiden.ca`
+  - a **SSL certificate**, I recommend Namecheap ([PositiveSSL](https://www.namecheap.com/security/ssl-certificates/comodo/positivessl/)) to procure one. This certificate will need to be generated for the custom domain name we created above
 - In Azure
-  - a **Storage Account** with [static web hosting](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website) enabled, to host your content
+  - a **Storage Account** with [static web hosting](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website) enabled, to host our content
   - a **Key Vault** to help generate the certificate and hold it once issued
   - a **CDN Profile**, to cache the content and optimize performance and cost
   - a **DNS Zone**, to manage the custom domain and point the traffic towards the CDN profile
@@ -35,6 +35,28 @@ On a picture:
 
 Let's jump into the details.
 
-## Point 1
+## Step 1 : Starting with the Static Website and the CDN Profile
 
-a
+Follow the **parts 1 and 2** from this [awesome tutorial](https://www.wrightfully.com/azure-static-website-custom-domain-https) from John M. Wright.
+
+In part 2, I've personally used the `Azure CDN from Microsoft` and it went great.
+
+At this point, what we should have is this:
+
+![Step 1 : a storage account with static hosting and a CDN endpoint](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202009_azure_static_blog/step1.png)
+
+*[figure 2 : a storage account with static hosting and a CDN endpoint](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202009_azure_static_blog/step1.png)*
+
+We can already see our content online to the following URLs:
+
+- `https://<sa>.web.core.windows.net`, directly from the storage account
+- `https://<cdn>.azureedge.net`, from the CDN endpoint
+
+To be noted that to upload our content to the $web container of the storage account, I recommend to use the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) over PowerShell (`Set-AzStorageBlobContent` messing up the content-types of the files uploaded). The syntax is straightforward (in a PowerShell host, cmd or bash terminal) :
+
+```PowerShell
+# Here the parameter syntax is PowerShell and I'm already logged via az login
+$contentLocalPath = "C:\..."
+$storageAccountName = "mystorageaccount"
+az storage blob upload-batch -s $contentLocalPath -d '$web' --account-name $storageAccountName
+```
