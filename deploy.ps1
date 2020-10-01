@@ -27,6 +27,10 @@ $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Ac
 $ctx = $storageAccount.Context
 Enable-AzStorageStaticWebsite -Context $ctx -IndexDocument "index.html" -ErrorDocument404Path "404.html"
 
+#nano Gemfile.lock
+# >> Add kramdown-parser-gfm (>= 1.0) to Jekyll
+#bundle install
+
 bundle exec jekyll clean
 bundle exec jekyll build
 
