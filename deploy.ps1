@@ -33,6 +33,7 @@ Enable-AzStorageStaticWebsite -Context $ctx -IndexDocument "index.html" -ErrorDo
 
 bundle exec jekyll clean
 bundle exec jekyll build
+bundle exec jekyll serve
 
 # CDN endpoint can be done via ARM templates : https://docs.microsoft.com/en-us/azure/cdn/create-profile-endpoint-template
 # For now via Portal > Via the Storage Account blade (from CDN it failed ><). If needed:
