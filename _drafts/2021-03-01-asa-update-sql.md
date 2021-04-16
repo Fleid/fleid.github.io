@@ -38,14 +38,12 @@ And again later with multiple events in the same time window:
 
 The Azure native tool to solve the stream processing part is [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/) (ASA). With it we can write a SQL query that will aggregate the events coming from the [input stream](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-define-inputs).
 
+Note that I'm not calculating the last value here as it takes a couple of steps and would detract from the point of this article. The syntax is [easy but verbose](https://github.com/Huachao/azure-content/blob/master/articles/stream-analytics/stream-analytics-stream-analytics-query-patterns.md#query-example-find-last-event-in-a-window).
+
 ```SQL
     SELECT
         SourceTimestamp,
         DeviceId,
-
-        /*Below: LAST will return a single row here. MAX is there to appease the GROUP BY gods*/
-        MAX(LAST(EventValue) OVER (PARTITION BY DeviceId LIMIT DURATION(minute, 5)) AS LastEventValue,
-
         SUM(EventValue) AS SumEventValue,
         COUNT(*) AS CountEvent
     FROM
@@ -94,8 +92,6 @@ WITH CTE1 AS (
     SELECT
         SourceTimestamp,
         DeviceId,
-        /*Below: LAST will return a single row here. MAX is there to appease the GROUP BY gods*/
-        MAX(LAST(EventValue) OVER (PARTITION BY DeviceId LIMIT DURATION(minute, 5)) AS LastEventValue,
         SUM(EventValue) AS SumEventValue,
         COUNT(*) AS CountEvent
     FROM
@@ -117,7 +113,6 @@ FROM CTE1;
 
 SELECT
     DeviceId,
-    LastEventValue,
     SumEventValue,
     CountEvent
 INTO
