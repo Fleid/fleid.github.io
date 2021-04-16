@@ -38,7 +38,24 @@ And again later, this time with multiple events in our window:
 
 ### Approach
 
-The Azure native tool to solve the stream processing part is [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/) (ASA). With it we can write a SQL query that will aggregates the events coming from the [input stream](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-define-inputs) on our 5 minute time window.
+The Azure native tool to solve the stream processing part is [Azure Stream Analytics](https://docs.microsoft.com/en-us/azure/stream-analytics/) (ASA). With it we can write a SQL query that will aggregate the events coming from the [input stream](https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-define-inputs) on our 5 minute time window.
+
+```SQL
+    SELECT
+        SourceTimestamp,
+        DeviceId,
+
+        /*Below: LAST will return a single row here. MAX is there to appease the GROUP BY gods*/
+        MAX(LAST(EventValue) OVER (PARTITION BY DeviceId LIMIT DURATION(minute, 5)) AS LastEventValue,
+
+        SUM(EventValue) AS SumEventValue,
+        COUNT(*) AS CountEvent
+    FROM
+        [SourceStream] TIMESTAMP BY SourceTimestamp
+    GROUP BY
+        DeviceId,
+        TumblingWindow(minute,5)
+```
 
 We want to keep a backup of the output of the ASA job for multiple reasons, including the ability to monitor the drift (there should be none) and re-generate the "materialized view" (aka aggregate table) if needs be.
 
@@ -54,21 +71,61 @@ From a theoretical perspective, there are 2 ways to deal with it.
 
 **The first option** is to delegate to Azure SQL the role of maintaining the "materialized view" from the history table we created. This can be done via triggers (but let's not) or [indexed views](https://docs.microsoft.com/en-us/sql/relational-databases/views/create-indexed-views?view=azuresqldb-current). To be transparent I haven't tested that option, but I am a bit worried about the performance implications since indexed views slow down the inserts on their source tables.
 
-**The other option** is to offload the update path to another compute resource, like [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview). It's more scalable on paper, but it requires a little bit of code to wire everything together.
+**The other option** is to offload the update path to another compute resource, like [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview).
 
 ### Solution
 
-As the title of the article suggests, I decided to use Azure Functions to implement the materialized view pattern in this situation.
+As the title of the article suggests, I decided to use Azure Functions to implement the materialized view pattern in this situation. It's the more scalable option, but it does require a little bit of code to wire everything together.
 
-[![First solution](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202103_asa_update_sql/solutiont01.png)](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202103_asa_update_sql/solution01.png)
-
+[![First solution](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202103_asa_update_sql/solution01.png)](https://raw.githubusercontent.com/Fleid/fleid.github.io/master/_posts/202103_asa_update_sql/solution01.png)
 
 ## Areas of interest
 
 ### ASA Query
 
+The setup is straightforward for Stream Analytics. Here we have one input (Event Hub) and two outputs (Azure SQL, Azure Function).
+
+The query will need to use the `with` [syntax](https://docs.microsoft.com/en-us/stream-analytics-query/with-azure-stream-analytics) (aka CTE / Common Table Expression) to serve an identical result set to our 2 outputs.
+
+```SQL
+WITH CTE1 AS (
+    SELECT
+        SourceTimestamp,
+        DeviceId,
+        /*Below: LAST will return a single row here. MAX is there to appease the GROUP BY gods*/
+        MAX(LAST(EventValue) OVER (PARTITION BY DeviceId LIMIT DURATION(minute, 5)) AS LastEventValue,
+        SUM(EventValue) AS SumEventValue,
+        COUNT(*) AS CountEvent
+    FROM
+        [SourceStream] TIMESTAMP BY SourceTimestamp
+    GROUP BY
+        DeviceId,
+        TumblingWindow(minute,5)
+    )
+
+/*******************************/
+
+SELECT
+    *
+INTO
+    [sql_history]
+FROM CTE1;
+
+/*******************************/
+
+SELECT
+    DeviceId,
+    LastEventValue,
+    SumEventValue,
+    CountEvent
+INTO
+    [fun_matview]
+FROM CTE1
+```
+
 ### Function
 
-### HA / DR
+C#
+Python
 
 ## Conclusion
