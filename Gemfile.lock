@@ -9,8 +9,8 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.7.0)
-      public_suffix (>= 2.0.2, < 5.0)
+    addressable (2.8.1)
+      public_suffix (>= 2.0.2, < 6.0)
     colorator (1.1.0)
     concurrent-ruby (1.1.7)
     em-websocket (0.5.2)
@@ -30,7 +30,6 @@ GEM
       jekyll-sass-converter (~> 1.0)
       jekyll-watch (~> 2.0)
       kramdown (>= 1.17, < 3)
-      kramdown-parser-gfm (>= 1.0)
       liquid (~> 4.0)
       mercenary (~> 0.3.3)
       pathutil (~> 0.9)
@@ -45,8 +44,6 @@ GEM
       listen (~> 3.0)
     kramdown (2.3.0)
       rexml
-    kramdown-parser-gfm (1.1.0)
-      kramdown (~> 2.0)
     liquid (4.0.3)
     listen (3.2.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -54,7 +51,7 @@ GEM
     mercenary (0.3.6)
     pathutil (0.16.2)
       forwardable-extended (~> 2.6)
-    public_suffix (4.0.6)
+    public_suffix (5.0.0)
     rake (12.3.3)
     rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
