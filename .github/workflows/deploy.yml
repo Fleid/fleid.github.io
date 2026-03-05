@@ -1,0 +1,94 @@
+# GitHub Actions workflow for building and deploying the Jekyll blog to Azure Storage.
+#
+# SETUP REQUIRED:
+#
+# 1. In the Azure portal, create a Service Principal with access to your storage account and CDN:
+#
+#    az ad sp create-for-rbac --name "github-blog-deploy" \
+#      --role "Storage Blob Data Contributor" \
+#      --scopes /subscriptions/<SUB_ID>/resourceGroups/rg-static-jekyll/providers/Microsoft.Storage/storageAccounts/sastaticjekyllcc
+#
+#    Also grant CDN Endpoint Contributor on the CDN profile:
+#
+#    az role assignment create \
+#      --assignee <SP_APP_ID> \
+#      --role "CDN Endpoint Contributor" \
+#      --scope /subscriptions/<SUB_ID>/resourceGroups/rg-static-jekyll/providers/Microsoft.Cdn/profiles/eiden-ca
+#
+# 2. In your GitHub repo, go to Settings > Secrets and variables > Actions and add:
+#
+#    AZURE_CREDENTIALS  — the full JSON output from the az ad sp create-for-rbac command
+#    AZURE_STORAGE_ACCOUNT — sastaticjekyllcc
+#    AZURE_CDN_PROFILE — eiden-ca
+#    AZURE_CDN_ENDPOINT — <your-cdn-endpoint-name>
+#    AZURE_RESOURCE_GROUP — rg-static-jekyll
+#
+# 3. Copy this file to .github/workflows/deploy.yml in your repo.
+#
+# 4. Push to master to trigger a deploy.
+
+name: Build and Deploy Blog
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: # allows manual trigger from GitHub UI
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true # runs bundle install and caches gems
+
+      - name: Build Jekyll site
+        run: bundle exec jekyll build
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Clear existing content
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az storage blob delete-batch \
+              --source '$web' \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+              --auth-mode login
+
+      - name: Upload site to Azure Storage
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az storage blob upload-batch \
+              --source _site \
+              --destination '$web' \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+              --auth-mode login \
+              --overwrite
+
+      - name: Purge CDN cache
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az cdn endpoint purge \
+              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ secrets.AZURE_CDN_PROFILE }} \
+              --name ${{ secrets.AZURE_CDN_ENDPOINT }} \
+              --content-paths "/*"
+
+      - name: Azure logout
+        if: always()
+        run: az logout
