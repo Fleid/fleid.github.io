@@ -188,6 +188,7 @@ exclude:
   - screenshot.png
   - docs/
   - deploy.ps1
+  - vendor
 
 plugins:
   - jekyll-paginate
