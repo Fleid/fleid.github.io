@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Publish a draft: bin/publish _drafts/<slug>.md
+# Moves it to _posts/<today>-<slug>.md, stamps the date, and commits. Then `git push` to go live.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+draft="${1:-}"
+[ -f "$draft" ] && [[ "$draft" == _drafts/* ]] || { echo "usage: bin/publish _drafts/<slug>.md"; ls _drafts; exit 1; }
+name=$(basename "$draft" .md)
+name=${name#[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-}  # drop an old date prefix, if any
+post="_posts/$(date +%Y-%m-%d)-$name.md"
+stamp=$(date +"%Y-%m-%d %H:%M:%S %z")
+
+git mv "$draft" "$post" 2>/dev/null || mv "$draft" "$post"
+# Set (or add, after the title) the date line in the front matter.
+export STAMP="$stamp"
+if grep -q '^date:' "$post"; then
+  perl -0pi -e 's/\A(---\n.*?)^date:[^\n]*/$1date:   $ENV{STAMP}/ms' "$post"
+else
+  perl -0pi -e 's/\A(---\n.*?^title:[^\n]*\n)/$1date:   $ENV{STAMP}\n/ms' "$post"
+fi
+
+title=$(sed -n 's/^title: *"\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$post" | head -1)
+git add "$post"
+[ -d "assets/img/$name" ] && git add "assets/img/$name"
+git commit -q -m "Publish: $title"
+echo "Committed $post. Run 'git push' to put it live (about a minute)."
