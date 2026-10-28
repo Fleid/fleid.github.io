@@ -173,7 +173,6 @@ exclude:
   - README.md
   - screenshot.png
   - docs/
-  - deploy.ps1
   - vendor
 
 plugins:
