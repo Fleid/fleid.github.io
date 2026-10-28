@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Preview the blog at http://localhost:4000 with drafts, reloading the browser on every save.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+# Homebrew's keg-only Ruby on macOS; elsewhere use whatever Ruby (>= 3.2) is on PATH.
+[ -x /opt/homebrew/opt/ruby@3.3/bin/ruby ] && export PATH="/opt/homebrew/opt/ruby@3.3/bin:$PATH"
+
+bundle config set --local path vendor/bundle >/dev/null
+bundle check >/dev/null || bundle install
+exec bundle exec jekyll serve --drafts --livereload "$@"
