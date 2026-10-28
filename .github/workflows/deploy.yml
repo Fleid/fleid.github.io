@@ -59,15 +59,8 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Clear existing content
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            az storage blob delete-batch \
-              --source '$web' \
-              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
-              --auth-mode login
-
+      # No delete-batch before upload: a failed upload would leave the site empty.
+      # Files removed from the site linger in $web, which is harmless.
       - name: Upload site to Azure Storage
         uses: azure/cli@v2
         with:
