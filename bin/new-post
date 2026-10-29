@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Start a draft: bin/new-post "My post title" [Tag1 Tag2 ...]
-# Creates _drafts/<slug>.md; it shows up in bin/serve but not on the live site.
+# Copies _drafts/template.md to _drafts/<slug>.md; it shows up in bin/serve but not on the live site.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -10,20 +10,8 @@ slug=$(printf '%s' "$title" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/
 file="_drafts/$slug.md"
 [ -e "$file" ] && { echo "$file already exists"; exit 1; }
 
-cat > "$file" <<EOF
----
-layout: post
-title:  "$title"
-tags: $*
-permalink: /$slug/
----
-
-Intro paragraph: this is the excerpt shown on the home page.
-
-<!--more-->
-
-## First section
-
-Images: put them in assets/img/$slug/ and use ![Alt text](/assets/img/$slug/picture.png)
-EOF
+# The template's placeholders: "Post title", "Tag1 Tag2" and post-slug.
+export TITLE="${title//\"/\\\"}" TAGS="$*" SLUG="$slug"
+perl -pe 's/^title:  "Post title"/title:  "$ENV{TITLE}"/; s/^tags: Tag1 Tag2/tags: $ENV{TAGS}/; s/post-slug/$ENV{SLUG}/g' \
+  _drafts/template.md > "$file"
 echo "Created $file (images go in assets/img/$slug/)"

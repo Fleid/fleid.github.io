@@ -11,6 +11,7 @@ bin/publish _drafts/my-post-title.md     # moves it to _posts/ with today's date
 git push                                 # live
 ```
 
+Drafts start from `_drafts/template.md`, which lists every front matter option.
 Images for new posts go in `assets/img/<slug>/` and are linked as `/assets/img/<slug>/picture.png`.
 Older posts hotlink images from `raw.githubusercontent.com/.../master/_posts/...`, so don't rename
 `master` or move those folders.

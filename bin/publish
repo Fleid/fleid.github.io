@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 
 draft="${1:-}"
 [ -f "$draft" ] && [[ "$draft" == _drafts/* ]] || { echo "usage: bin/publish _drafts/<slug>.md"; ls _drafts; exit 1; }
+[ "$(basename "$draft")" = "template.md" ] && { echo "That's the template; start a post with bin/new-post"; exit 1; }
 name=$(basename "$draft" .md)
 name=${name#[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-}  # drop an old date prefix, if any
 post="_posts/$(date +%Y-%m-%d)-$name.md"
